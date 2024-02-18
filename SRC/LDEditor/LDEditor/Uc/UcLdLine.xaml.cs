@@ -21,23 +21,23 @@ public partial class UcLdLine : UserControl
         {
             if (e.OldValue is not LdLine oldLine) return;
 
-            oldLine.Elements.CollectionChanged -= OnElemetsChanged;
+            oldLine.Elements.CollectionChanged -= OnElementsChanged;
         }
 
         if (e.NewValue is not LdLine line) throw new Exception("Wrong type for the uc");
-        line.Elements.CollectionChanged += OnElemetsChanged;
-        OnElemetsChanged(this.DataContext,
+        line.Elements.CollectionChanged += OnElementsChanged;
+        OnElementsChanged(this.DataContext,
             new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
 
-    private void OnElemetsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void OnElementsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         CtrlGrid.RowDefinitions.Clear();
         CtrlGrid.Children.Clear();
 
         if (sender is not LdLine line) return;
 
-        var rows = line.GetMaxRows();
+        var rows = line.GetMaxRows() + 1;
 
         for (int i = 0; i < rows; i++)
         {
@@ -69,16 +69,10 @@ public partial class UcLdLine : UserControl
             if (e.Data.GetData(LdEditorElementFormatString) is not LdElement elemDropped) return;
 
             var hit = VisualTreeHelper.HitTest(this, e.GetPosition(this));
-            if (hit == null)
-            {
-                return;
-            }
+            if (hit == null) return;
 
             var grid = hit.VisualHit.Parent<Grid>();
-            if (grid == null)
-            {
-                return;
-            }
+            if (grid == null) return;
 
             var gridPosition = grid.GetColumnRow(e.GetPosition(grid));
 
@@ -86,7 +80,7 @@ public partial class UcLdLine : UserControl
             var line = DataContext as LdLine;
             if (line == null) throw new Exception("Wrong type");
             if (!line.Elements.Contains(elemDropped)) line.Elements.Add(elemDropped);
-            OnElemetsChanged(line, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            OnElementsChanged(line, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
 

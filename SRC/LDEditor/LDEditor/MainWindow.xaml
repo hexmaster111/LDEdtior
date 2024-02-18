@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:LDEditor"
         xmlns:uc="clr-namespace:LDEditor.Uc"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        d:DataContext="{d:DesignInstance local:MainWindowViewModel}">
     <Grid ShowGridLines="False">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="255" />
@@ -26,21 +27,29 @@
             </Grid.RowDefinitions>
             <Menu Grid.Row="0" FontSize="24">
                 <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---------" Tag="Wire" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="+----    " Tag="OrBranchStart" />
                 <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="----+    " Tag="OrBranchEnd" />
                 <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="----+----" Tag="OrWire" />
-                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---| |---" Tag="NormallyOpenContact" />
-                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---|/|---" Tag="NormallyClosedContact" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---| |---"
+                          Tag="NormallyOpenContact" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---|/|---"
+                          Tag="NormallyClosedContact" />
                 <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---( )---" Tag="Coil" />
                 <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---(/)---" Tag="NegatedCoil" />
                 <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---(S)---" Tag="SetLatchCoil" />
                 <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---(R)---" Tag="ResetLatchCoil" />
+                <MenuItem Click="AddRung_OnClick" Header="[Add Rung]">
+                </MenuItem>
             </Menu>
 
-            <StackPanel Grid.Row="1">
-                <Separator />
-                <uc:UcLdLine x:Name="UcDoc" />
-                <Separator />
-            </StackPanel>
+
+            <ListBox Grid.Row="1" ItemsSource="{Binding ActiveDocument.Lines}" HorizontalContentAlignment="Stretch">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <uc:UcLdLine DataContext="{Binding}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
 
         </Grid>
 

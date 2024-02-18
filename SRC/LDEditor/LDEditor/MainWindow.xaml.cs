@@ -12,93 +12,32 @@ using System.Windows.Shapes;
 
 namespace LDEditor;
 
+public class MainWindowViewModel : NotifyObject
+{
+    private LdDocument _ActiveDocument = new LdDocument();
+
+    public LdDocument ActiveDocument
+    {
+        get => _ActiveDocument;
+        set => SetField(ref _ActiveDocument, value);
+    }
+}
+
 /// <summary>
 /// Interaction logic for MainWindow.xaml
 /// </summary>
 public partial class MainWindow : Window
 {
+    private readonly MainWindowViewModel _vm;
+
     public MainWindow()
     {
         InitializeComponent();
-        UcDoc.DataContext =
-            // new LdDocument()
-            // {
-            // Lines = new ObservableCollection<LdLine>(new[]
-            // {
-            new LdLine()
-            {
-                Elements = new ObservableCollection<LdElement>(new[]
-                {
-                    new LdElement()
-                    {
-                        ElementType = ElementType.NormallyOpenContact,
-                        Label = "START",
-                        LinePos = new RowCol { Col = 0, Row = 0 }
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.NormallyOpenContact,
-                        Label = "!STOP",
-                        LinePos = new RowCol { Col = 1, Row = 0 }
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.NormallyOpenContact,
-                        Label = "MEM_0",
-                        LinePos = new RowCol() { Col = 0, Row = 1 },
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.Wire,
-                        Label = "",
-                        LinePos = new RowCol() { Col = 1, Row = 1 },
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.OrWire,
-                        Label = "",
-                        LinePos = new RowCol() { Col = 2, Row = 0 },
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.OrBranchEnd,
-                        Label = "",
-                        LinePos = new RowCol() { Col = 2, Row = 1 },
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.Wire,
-                        Label = "",
-                        LinePos = new RowCol() { Col = 3, Row = 0 },
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.Wire,
-                        Label = "",
-                        LinePos = new RowCol() { Col = 3, Row = 0 },
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.Wire,
-                        Label = "",
-                        LinePos = new RowCol() { Col = 4, Row = 0 },
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.Wire,
-                        Label = "",
-                        LinePos = new RowCol() { Col = 5, Row = 0 },
-                    },
-                    new LdElement()
-                    {
-                        ElementType = ElementType.Coil,
-                        Label = "MEM_0",
-                        LinePos = new RowCol() { Col = 5, Row = 0 },
-                    },
-                })
-                // }
-                // })
-            };
+
+
+        this.DataContext = _vm = new MainWindowViewModel()
+        {
+        };
     }
 
     private void NewElem_MouseMove(object sender, MouseEventArgs e)
@@ -112,7 +51,14 @@ public partial class MainWindow : Window
                 DragDrop.DoDragDrop(mi, new LdElement()
                 {
                     ElementType = elementType,
-                    Label = "???"
+                    Label = elementType switch
+                    {
+                        ElementType.Wire => string.Empty,
+                        ElementType.OrWire => string.Empty,
+                        ElementType.OrBranchEnd => string.Empty,
+                        ElementType.OrBranchStart => string.Empty,
+                        _ => "???"
+                    }
                 }, DragDropEffects.Move);
             }
         }
@@ -123,12 +69,20 @@ public partial class MainWindow : Window
         if (sender is MenuItem mi && mi.Tag is string str)
         {
             if (!Enum.TryParse(str, out ElementType elementType)) return;
-
-            DragDrop.DoDragDrop(mi, new LdElement()
-            {
-                ElementType = elementType,
-                Label = "???"
-            }, DragDropEffects.Move);
         }
+    }
+
+    private void AddRung_OnClick(object sender, RoutedEventArgs e)
+    {
+        _vm.ActiveDocument.Lines.Add(new LdLine()
+        {
+            Elements = new ObservableCollection<LdElement>(new[]
+            {
+                new LdElement()
+                {
+                    ElementType = ElementType.Wire, LinePos = new() { Row = 0, Col = 0 }
+                }
+            })
+        });
     }
 }

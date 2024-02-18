@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.VisualBasic;
 
 namespace LDEditor.Uc;
 
@@ -22,5 +23,14 @@ public partial class UcLdElement : UserControl
                 DragDrop.DoDragDrop(control, elem, DragDropEffects.Move);
             }
         }
+    }
+
+    LdElement? DataCtx => DataContext as LdElement;
+
+    private void ChangeLabel_OnClick(object sender, RoutedEventArgs e)
+    {
+        var newLabel = Interaction.InputBox("Label");
+        if (string.IsNullOrEmpty(newLabel)) return;
+        if (DataCtx != null) DataCtx.Label = newLabel;
     }
 }

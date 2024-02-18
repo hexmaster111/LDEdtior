@@ -8,13 +8,14 @@
              mc:Ignorable="d"
              d:DesignHeight="128" d:DesignWidth="128"
              d:DataContext="{d:DesignInstance ldEditor:LdElement}"
-             Background="Black">
+             AllowDrop="False">
+             <!-- Background="Black" -->
 
     <UserControl.Resources>
         <Style TargetType="TextBlock">
 
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="Foreground" Value="Yellow" />
+            <!-- <Setter Property="Foreground" Value="Yellow" /> -->
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="FontFamily" Value="Cascadia Mono" />
@@ -22,9 +23,16 @@
         </Style>
     </UserControl.Resources>
 
+    <UserControl.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="Delete" />
+            <Separator />
+            <MenuItem Header="Change Label" Click="ChangeLabel_OnClick" />
+        </ContextMenu>
+    </UserControl.ContextMenu>
+
     <Viewbox Stretch="Fill">
         <Grid>
-
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />

@@ -10,6 +10,14 @@ public class LdDocument : NotifyObject
 
 public class LdLine : NotifyObject
 {
+    private string _comment = "";
+
+    public string Comment
+    {
+        get => _comment;
+        set => SetField(ref _comment, value);
+    }
+
     public ObservableCollection<LdElement> Elements { get; init; } = new();
 
     public int GetMaxRows() => Elements.Max(x => x.LinePos.Row) + 1;
@@ -57,12 +65,14 @@ public class LdElement : NotifyObject
         ElementType.ResetLatchCoil => "--(R)--",
         ElementType.OrWire => "---+---",
         ElementType.OrBranchEnd => "---+   ",
+        ElementType.OrBranchStart => "   +---",
         _ => throw new ArgumentOutOfRangeException()
     };
 
     public string CenterBarText => ElementType switch
     {
         ElementType.OrBranchEnd => "|",
+        ElementType.OrBranchStart => "|",
         _ => ""
     };
 }
@@ -73,6 +83,7 @@ public enum ElementType
     Nothing,
     OrWire,
     OrBranchEnd,
+    OrBranchStart,
     NormallyOpenContact,
     NormallyClosedContact,
 
