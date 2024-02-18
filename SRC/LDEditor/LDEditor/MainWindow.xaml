@@ -1,0 +1,48 @@
+﻿<Window x:Class="LDEditor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LDEditor"
+        xmlns:uc="clr-namespace:LDEditor.Uc"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid ShowGridLines="False">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="255" />
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <GridSplitter Grid.Column="1" Background="DarkGray" Cursor="SizeWE" HorizontalAlignment="Stretch" />
+        <Grid Grid.Column="0">
+            <!-- Project Items -->
+        </Grid>
+
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Menu Grid.Row="0" FontSize="24">
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---------" Tag="Wire" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="----+    " Tag="OrBranchEnd" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="----+----" Tag="OrWire" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---| |---" Tag="NormallyOpenContact" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---|/|---" Tag="NormallyClosedContact" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---( )---" Tag="Coil" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---(/)---" Tag="NegatedCoil" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---(S)---" Tag="SetLatchCoil" />
+                <MenuItem MouseMove="NewElem_MouseMove" Click="NewElem_OnClick" Header="---(R)---" Tag="ResetLatchCoil" />
+            </Menu>
+
+            <StackPanel Grid.Row="1">
+                <Separator />
+                <uc:UcLdLine x:Name="UcDoc" />
+                <Separator />
+            </StackPanel>
+
+        </Grid>
+
+    </Grid>
+</Window>
