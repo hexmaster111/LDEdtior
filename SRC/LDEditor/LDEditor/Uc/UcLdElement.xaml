@@ -5,21 +5,21 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:LDEditor.Uc"
              xmlns:ldEditor="clr-namespace:LDEditor"
+             xmlns:ldLib="clr-namespace:LdLib;assembly=LdLib"
+             xmlns:types="clr-namespace:LdLib.Types;assembly=LdLib"
              mc:Ignorable="d"
              d:DesignHeight="128" d:DesignWidth="128"
-             d:DataContext="{d:DesignInstance ldEditor:LdElement}"
+             d:DataContext="{d:DesignInstance types:LdElement}"
              AllowDrop="False">
              <!-- Background="Black" -->
 
     <UserControl.Resources>
         <Style TargetType="TextBlock">
-
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <!-- <Setter Property="Foreground" Value="Yellow" /> -->
             <Setter Property="VerticalAlignment" Value="Stretch" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="FontFamily" Value="Cascadia Mono" />
-
         </Style>
     </UserControl.Resources>
 

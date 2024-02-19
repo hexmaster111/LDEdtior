@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,6 +10,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using LdLib;
+using LdLib.Types;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace LDEditor;
 
@@ -84,5 +89,26 @@ public partial class MainWindow : Window
                 }
             })
         });
+    }
+
+    private void CompOut_OnClick(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show(_vm.ActiveDocument.Lines.First().GetLogicalStatement());
+    }
+
+    private void Save_OnClick(object sender, RoutedEventArgs e)
+    {
+        var data = JsonConvert.SerializeObject(_vm.ActiveDocument);
+        File.WriteAllText("Save.json", data);
+    }
+
+    private void Load_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (File.Exists("Save.json"))
+        {
+            var text = File.ReadAllText("Save.json");
+            var obj = JsonConvert.DeserializeObject<LdDocument>(text);
+            if (obj != null) _vm.ActiveDocument = obj;
+        }
     }
 }

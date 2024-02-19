@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using LdLib;
+using LdLib.Types;
 using Microsoft.VisualBasic;
 
 namespace LDEditor.Uc;
@@ -29,7 +31,7 @@ public partial class UcLdElement : UserControl
 
     private void ChangeLabel_OnClick(object sender, RoutedEventArgs e)
     {
-        var newLabel = Interaction.InputBox("Label");
+        var newLabel = Interaction.InputBox("Label", "", DataCtx?.Label ?? "");
         if (string.IsNullOrEmpty(newLabel)) return;
         if (DataCtx != null) DataCtx.Label = newLabel;
     }

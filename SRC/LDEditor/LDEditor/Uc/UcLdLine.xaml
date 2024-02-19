@@ -5,6 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:LDEditor.Uc"
              xmlns:ldEditor="clr-namespace:LDEditor"
+             xmlns:ldLib="clr-namespace:LdLib;assembly=LdLib"
+             xmlns:types="clr-namespace:LdLib.Types;assembly=LdLib"
              mc:Ignorable="d"
              AllowDrop="True"
              Drop="UcLdLine_OnDrop"
@@ -13,7 +15,7 @@
              PreviewDragOver="UcLdLine_OnPreviewDragOver"
              PreviewDrop="UcLdLine_OnPreviewDrop"
              d:DesignHeight="300" d:DesignWidth="300"
-             d:DataContext="{d:DesignInstance ldEditor:LdLine}">
+             d:DataContext="{d:DesignInstance types:LdLine}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -21,7 +23,7 @@
         </Grid.RowDefinitions>
         <TextBox Grid.Row="0" Text="{Binding Comment}" TextWrapping="Wrap" Background="Wheat"></TextBox>
 
-        <Grid Grid.Row="1" Name="CtrlGrid" ShowGridLines="False" Background="LightBlue">
+        <Grid Grid.Row="1" Name="CtrlGrid" ShowGridLines="True" Background="LightBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />

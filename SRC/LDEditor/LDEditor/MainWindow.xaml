@@ -8,6 +8,13 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         d:DataContext="{d:DesignInstance local:MainWindowViewModel}">
+    <DockPanel>
+        
+    <Menu DockPanel.Dock="Top" >
+        <MenuItem Header="do it!" Click="CompOut_OnClick"/>
+        <MenuItem Header="Save" Click="Save_OnClick"/>
+        <MenuItem Header="Load" Click="Load_OnClick"/>
+    </Menu>
     <Grid ShowGridLines="False">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="255" />
@@ -43,7 +50,9 @@
             </Menu>
 
 
-            <ListBox Grid.Row="1" ItemsSource="{Binding ActiveDocument.Lines}" HorizontalContentAlignment="Stretch">
+            <ListBox Grid.Row="1" 
+                     ItemsSource="{Binding ActiveDocument.Lines}" 
+                     HorizontalContentAlignment="Stretch">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <uc:UcLdLine DataContext="{Binding}" />
@@ -54,4 +63,5 @@
         </Grid>
 
     </Grid>
+    </DockPanel>
 </Window>

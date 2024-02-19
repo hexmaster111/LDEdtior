@@ -5,7 +5,7 @@ using System.Windows.Media;
 
 namespace LDEditor;
 
-public static class GridExtentions
+public static class GridExtensions
 {
     public static T Parent<T>(this DependencyObject root) where T : class
     {

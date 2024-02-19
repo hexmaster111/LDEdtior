@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using LdLib;
+using LdLib.Types;
 
 namespace LDEditor.Uc;
 
@@ -39,7 +41,7 @@ public partial class UcLdLine : UserControl
 
         var rows = line.GetMaxRows() + 1;
 
-        for (int i = 0; i < rows; i++)
+        for (var i = 0; i < rows; i++)
         {
             CtrlGrid.RowDefinitions.Add(new RowDefinition());
         }
@@ -59,7 +61,8 @@ public partial class UcLdLine : UserControl
         }
     }
 
-    const string LdEditorElementFormatString = nameof(LDEditor) + "." + nameof(LdElement);
+    private const string LdEditorElementFormatString =
+        nameof(LdLib) + "." + nameof(LdLib.Types) + "." + nameof(LdElement);
 
     private void UcLdLine_OnDrop(object sender, DragEventArgs e)
     {
@@ -69,9 +72,7 @@ public partial class UcLdLine : UserControl
             if (e.Data.GetData(LdEditorElementFormatString) is not LdElement elemDropped) return;
 
             var hit = VisualTreeHelper.HitTest(this, e.GetPosition(this));
-            if (hit == null) return;
-
-            var grid = hit.VisualHit.Parent<Grid>();
+            var grid = hit?.VisualHit.Parent<Grid>();
             if (grid == null) return;
 
             var gridPosition = grid.GetColumnRow(e.GetPosition(grid));

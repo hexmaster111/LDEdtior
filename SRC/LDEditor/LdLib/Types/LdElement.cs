@@ -1,29 +1,8 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
+﻿using Newtonsoft.Json;
 
-namespace LDEditor;
+namespace LdLib.Types;
 
-public class LdDocument : NotifyObject
-{
-    public ObservableCollection<LdLine> Lines { get; init; } = new();
-}
-
-public class LdLine : NotifyObject
-{
-    private string _comment = "";
-
-    public string Comment
-    {
-        get => _comment;
-        set => SetField(ref _comment, value);
-    }
-
-    public ObservableCollection<LdElement> Elements { get; init; } = new();
-
-    public int GetMaxRows() => Elements.Max(x => x.LinePos.Row) + 1;
-    public bool IsOpenSpace(RowCol pos) => Elements.Any(x => x.LinePos == pos);
-}
-
+[JsonObject(MemberSerialization.OptIn)]
 public class LdElement : NotifyObject
 {
     private ElementType _elementElementType;
@@ -32,18 +11,21 @@ public class LdElement : NotifyObject
     private string _label = "";
 
 
+    [JsonProperty("Pos")]
     public RowCol LinePos
     {
         get => _linePos;
         set => SetField(ref _linePos, value);
     }
 
+    [JsonProperty("Lbl")]
     public string Label
     {
         get => _label;
         set => SetField(ref _label, value);
     }
 
+    [JsonProperty("Typ")]
     public ElementType ElementType
     {
         get => _elementElementType;
@@ -97,25 +79,4 @@ public enum ElementType
 
     // PositiveTransitionSendingCoil,
     // NegativeTransitionSendingCoil,
-}
-
-public struct RowCol
-{
-    public int Row;
-    public int Col;
-
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is not RowCol rc) return false;
-        return rc.Row == Row && rc.Col == Col;
-    }
-
-    public override int GetHashCode() => HashCode.Combine(Row.GetHashCode(), Col.GetHashCode());
-
-    public override string ToString() => $"Row {Row} - Col {Col}";
-
-    public static bool operator ==(RowCol left, RowCol right) => left.Equals(right);
-
-    public static bool operator !=(RowCol left, RowCol right) => !(left == right);
 }
