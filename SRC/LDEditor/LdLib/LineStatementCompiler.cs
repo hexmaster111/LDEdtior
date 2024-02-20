@@ -10,12 +10,25 @@ public enum Operator
     Or
 }
 
+public struct ThisOrThat<TThis, TThat>
+{
+    public TThis? This;
+    public TThat? That;
+
+    public ThisOrThat(TThis? @this, TThat? that)
+    {
+        if (@this == null && that == null) throw new Exception("Both This and That are null");
+        if (@this != null && that != null) throw new Exception("Both This and That are not null");
+        This = @this;
+        That = that;
+    }
+}
+
 public class Node
 {
     public Operator Operator { get; set; }
-    public Node? Left { get; set; }
-    public Node? Right { get; set; }
-    public LdElement? Element { get; set; }
+    public ThisOrThat<Node, LdElement> Left { get; set; }
+    public ThisOrThat<Node, LdElement> Right { get; set; }
 
 
     public override string ToString()
