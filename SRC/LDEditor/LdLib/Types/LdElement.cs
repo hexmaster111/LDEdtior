@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace LdLib.Types;
 
@@ -9,6 +10,11 @@ public class LdElement : NotifyObject
 
     private RowCol _linePos;
     private string _label = "";
+
+    public override string ToString()
+    {
+        return $"{Label} {ElementType}";
+    }
 
 
     [JsonProperty("Pos")]

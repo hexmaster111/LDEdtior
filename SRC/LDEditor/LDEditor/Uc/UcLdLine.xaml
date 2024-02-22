@@ -23,7 +23,7 @@
         </Grid.RowDefinitions>
         <TextBox Grid.Row="0" Text="{Binding Comment}" TextWrapping="Wrap" Background="Wheat"></TextBox>
 
-        <Grid Grid.Row="1" Name="CtrlGrid" ShowGridLines="True" Background="LightBlue">
+        <Grid Grid.Row="1" Name="CtrlGrid" ShowGridLines="False" Background="LightBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />

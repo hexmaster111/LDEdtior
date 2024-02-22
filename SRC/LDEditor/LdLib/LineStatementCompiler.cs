@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Runtime.InteropServices;
+using LdLib.CompilerTypes;
 using LdLib.Types;
 
 namespace LdLib;
@@ -10,65 +11,28 @@ public enum Operator
     Or
 }
 
-public struct ThisOrThat<TThis, TThat>
+public interface IPrintable
 {
-    public TThis? This;
-    public TThat? That;
-
-    public ThisOrThat(TThis? @this, TThat? that)
-    {
-        if (@this == null && that == null) throw new Exception("Both This and That are null");
-        if (@this != null && that != null) throw new Exception("Both This and That are not null");
-        This = @this;
-        That = that;
-    }
-}
-
-public class Node
-{
-    public Operator Operator { get; set; }
-    public ThisOrThat<Node, LdElement> Left { get; set; }
-    public ThisOrThat<Node, LdElement> Right { get; set; }
-
-
-    public override string ToString()
-    {
-        if (Element != null) return Element.Label;
-        var left = Left?.ToString() ?? "";
-        var right = Right?.ToString() ?? "";
-        return $"({left} {Operator} {right})";
-    }
+    string ToString();
 }
 
 public class LineStatementCompiler
 {
     public LineStatementCompiler(IList<LdElement> elements)
     {
-        _maxCols = elements.Max(x => x.LinePos.Col);
-        _maxRows = elements.Max(x => x.LinePos.Row);
+        _maxCols = elements.Max(x => x.LinePos.Col) + 1;
+        _maxRows = elements.Max(x => x.LinePos.Row) + 1;
         _elements = new LdElement[_maxCols + 1, _maxRows + 1];
-        _coils = new LdElement[_maxRows + 1];
 
         foreach (var elem in elements)
         {
             var row = elem.LinePos.Row;
             var col = elem.LinePos.Col;
-            if (elem.ElementType is
-                ElementType.Coil or
-                ElementType.NegatedCoil or
-                ElementType.SetLatchCoil or
-                ElementType.ResetLatchCoil)
-            {
-                _coils[row] = elem;
-                continue;
-            }
-
-            _elements[col, row] = elem;
+           _elements[col, row] = elem;
         }
     }
 
     private readonly LdElement[ /*col*/, /*row*/] _elements;
-    private readonly LdElement[] _coils;
     private readonly int _maxCols;
     private readonly int _maxRows;
 
@@ -88,31 +52,118 @@ public class LineStatementCompiler
         return root.ToString();
     }
 
-    private Node Parse(int r, int c)
+
+    //TODO: Think like we are walking down a diagram one element at a time like you would read it
+    //            a           b          c           d                   X
+    //        ---| |---and---| |---orw---| |---and---| |--------orw-----( )-- 
+    //                             |         X           Y      |
+    //                             obs------| |---and---| |---obe //TODO: parse this bit
+    // a & b & ( ( c & d ) || ( x & y ) ) = x
+    // no a & b
+    //    ( c & d ) || ( x & y ) = x
+    private string Parse(int r, int c)
     {
-        if (r > _maxRows) return new Node();
-        if (c >= _maxCols) return new Node();
-        var elem = GetElement(c, r);
-        if (elem == null) throw new LdException("Expected Element", new(r, c));
-        switch (elem.ElementType)
+        List<LdElement> andList = new();
+        var o = "";
+
+        while (true)
         {
-            case ElementType.Nothing: throw new LdException("Expected Element", new(r, c));
-            case ElementType.Wire: return Parse(r, c + 1);
-            case ElementType.NormallyOpenContact:
-            case ElementType.NormallyClosedContact:
-
-                return new Node()
+            var elem = GetElement(c, r);
+            if (elem == null) throw new LdException("Expected Element", new RowCol(r, c));
+            switch (elem.ElementType)
+            {
+                case ElementType.OrWire: // handles c & d
                 {
-                    Operator = Operator.And,
-                    Left = new Node()
+                    //Figuring out what the elem below is
+
+                    var oneBelow = GetElement(c, r + 1);
+
+                    if (oneBelow?.ElementType == ElementType.OrBranchStart) goto start_or_wire;
+                    if (oneBelow?.ElementType == ElementType.OrBranchEnd) goto end_or_wire;
+                    throw new LdException("Expected OrBranchStart or OrBranchEnd", new RowCol(r, c));
+
+                   
+
+
+                    end_or_wire: // the elem r + 1 is an OrBranchEnd
+                    if (andList.Count == 0) throw new LdException("No elements in branch!", new RowCol(r, c));
+
                     {
-                        Element = elem
-                    },
-                    Right = Parse(r, c + 1)
-                };
+                        var lastAndElement = andList.Last();
+                        foreach (var e in andList)
+                        {
+                            o += e.Label;
+                            if (!ReferenceEquals(e, lastAndElement))
+                            {
+                                o += " & ";
+                            }
+                        }
+
+                        andList.Clear();
+
+                        o += ") ||";
+                    }
 
 
-            default: throw new Exception();
+                    start_or_wire: // the elem r + 1 is an OrBranchStart
+                    if (andList.Count != 0)
+                    {
+                        //print a & b
+                        var lastAndElement = andList.Last();
+                        foreach (var e in andList)
+                        {
+                            o += e.Label;
+                            if (!ReferenceEquals(e, lastAndElement))
+                            {
+                                o += " & ";
+                            }
+                        }
+
+                        andList.Clear();
+
+                        o += "&(";
+                    }
+
+                    o += '(';
+                    goto nextElement;
+                }
+
+                case ElementType.OrBranchEnd: break;
+                case ElementType.OrBranchStart: break;
+
+                case ElementType.NormallyOpenContact:
+                case ElementType.NormallyClosedContact:
+                    andList.Add(elem);
+                    goto nextElement;
+
+                case ElementType.Wire:
+                    nextElement:
+                    c += 1;
+                    continue;
+
+                case ElementType.Coil:
+                case ElementType.NegatedCoil:
+                case ElementType.SetLatchCoil:
+                case ElementType.ResetLatchCoil:
+
+                    if (andList.Count != 0)
+                    {
+                        var lastAndElement = andList.Last();
+                        foreach (var e in andList)
+                        {
+                            o += e.Label;
+                            if (!ReferenceEquals(e, lastAndElement))
+                            {
+                                o += " & ";
+                            }
+                        }
+                    }
+                    
+                    return "(" + o + ") = " + elem.Label;
+                case ElementType.Nothing:
+                default:
+                    throw new LdException("Unknown Element", new RowCol(r, c));
+            }
         }
     }
 }
