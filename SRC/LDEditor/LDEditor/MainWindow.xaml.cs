@@ -106,7 +106,20 @@ public partial class MainWindow : Window
 
     private void CompOut_OnClick(object sender, RoutedEventArgs e)
     {
-        BigPopup.ShowDialog(_vm.ActiveDocument.Lines.First().GetLogicalStatement());
+        // BigPopup.ShowDialog(_vm.ActiveDocument.Lines.First().GetLogicalStatement());
+        _vm.ActiveDocument.Lines.Add(new());
+        _vm.ActiveDocument.Lines[0] = new LdStatementUiCreate().ParseLineFromStatement(
+            """
+            NO A
+            NO D
+            ORBRANCH
+            NO B
+            NO E
+            ORBRANCH
+            NO C
+            NO ???
+            ENDBRANCH
+            """);
     }
 
     private void Save_OnClick(object sender, RoutedEventArgs e)
@@ -124,23 +137,29 @@ public partial class MainWindow : Window
             if (obj != null) _vm.ActiveDocument = obj;
         }
     }
-}
 
-internal static class BigPopup
-{
-    public static void ShowDialog(string text)
+    private void Clear_OnClick(object sender, RoutedEventArgs e)
     {
-        var wind = new Window()
+        _vm.ActiveDocument.Lines.Clear();
+    }
+
+    private void TextBoxBase_OnTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!(_vm.ActiveDocument.Lines.Count > 0))
+            _vm.ActiveDocument.Lines.Add(new());
+
+        try
         {
-            Height = 266,
-            Content = new Viewbox()
-            {
-                Child = new TextBlock()
-                {
-                    Text = text
-                }
-            }
-        };
-        wind.ShowDialog();
+            _vm.ActiveDocument.Lines[0] = new LdStatementUiCreate().ParseLineFromStatement(Code.Text);
+            Output.Text = "";
+        }
+        catch (LdException ldException)
+        {
+            Output.Text = ldException.Line + Environment.NewLine + ldException.Message;
+        }
+        catch (Exception ex)
+        {
+            //ignore
+        }
     }
 }

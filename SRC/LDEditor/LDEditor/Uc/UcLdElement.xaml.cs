@@ -35,4 +35,6 @@ public partial class UcLdElement : UserControl
         if (string.IsNullOrEmpty(newLabel)) return;
         if (DataCtx != null) DataCtx.Label = newLabel;
     }
+
+
 }

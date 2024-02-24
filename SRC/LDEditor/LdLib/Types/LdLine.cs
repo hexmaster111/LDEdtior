@@ -14,8 +14,16 @@ public class LdLine : NotifyObject
 
     public ObservableCollection<LdElement> Elements { get; init; } = new();
 
-    public int GetMaxRows() => Elements.Max(x => x.LinePos.Row) + 1;
-    public bool IsOpenSpace(RowCol pos) => Elements.Any(x => x.LinePos == pos);
+    public int GetMaxRows()
+    {
+        if (!Elements.Any()) return 0;
+        return Elements.Max(x => x.LinePos.Row) + 1;
+    }
+
+    public bool IsOpenSpace(RowCol pos)
+    {
+        return Elements.Any(x => x.LinePos == pos);
+    }
 
     public string GetLogicalStatement()
     {

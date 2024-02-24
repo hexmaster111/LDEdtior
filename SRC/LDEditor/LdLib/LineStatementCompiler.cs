@@ -67,7 +67,6 @@ public class LineStatementCompiler
         List<LdElement> andList = new();
         var o = "";
         Stack<RowCol> nextBranchStart = new();
-        bool needsClose = false;
         while (true)
         {
             var elem = GetElement(r, c);
@@ -98,26 +97,33 @@ public class LineStatementCompiler
                     if (andList.Count == 0) goto nextElement;
 
                     var lastAndElement = andList.Last();
+
+                    o += "(";
                     foreach (var e in andList)
                     {
                         o += e.Label;
                         if (!ReferenceEquals(e, lastAndElement))
                         {
-                            o += " & ";
+                            o += "&";
                         }
                     }
 
+                    o += ")";
+
+
                     andList.Clear();
 
-                    o += ")||";
+                    o += "||";
 
                     //we hit the end of this and branch, lets go do the next or
 
                     var pos = nextBranchStart.Pop();
 
-                    o += "(" + Parse(pos.Row, pos.Col, true) + ")";
-                    if (needsClose) o += ")";
-                    needsClose = false;
+
+                    var next = "(" + Parse(pos.Row, pos.Col, true) + ")";
+
+                    o +=  next;
+
                     break;
 
                     start_or_wire: // the elem r + 1 is an OrBranchStart
@@ -138,11 +144,9 @@ public class LineStatementCompiler
 
                         andList.Clear();
 
-                        o += "&(";
+                        o += "&";
                     }
 
-                    o += '(';
-                    needsClose = true;
                     goto nextElement;
                 }
 
@@ -163,7 +167,6 @@ public class LineStatementCompiler
                             }
 
                             andList.Clear();
-                            
                         }
 
                         if (nextBranchStart.TryPop(out var next))
@@ -221,6 +224,7 @@ public class LineStatementCompiler
                         }
                     }
 
+                    return o;
 
                     return "(" + o + ") = " + elem.Label;
                 case ElementType.Nothing:

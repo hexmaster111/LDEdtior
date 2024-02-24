@@ -14,6 +14,7 @@
             <MenuItem Header="do it!" Click="CompOut_OnClick" />
             <MenuItem Header="Save" Click="Save_OnClick" />
             <MenuItem Header="Load" Click="Load_OnClick" />
+            <MenuItem Header="Clear" Click="Clear_OnClick" />
 
             <MenuItem Header="Ui Options">
                 <CheckBox IsChecked="{Binding UiOptions.ShowRowColOnUiElements}">
@@ -31,7 +32,16 @@
 
             <GridSplitter Grid.Column="1" Background="DarkGray" Cursor="SizeWE" HorizontalAlignment="Stretch" />
             <Grid Grid.Column="0">
-                <!-- Project Items -->
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <!-- Project Items -->
+                    <TextBox Name="Code" Grid.Row="0" TextChanged="TextBoxBase_OnTextChanged" AcceptsReturn="True"
+                             AcceptsTab="True" />
+                    <TextBlock Grid.Row="1" Name="Output"></TextBlock>
+                </Grid>
             </Grid>
 
             <Grid Grid.Column="2">
