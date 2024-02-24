@@ -19,6 +19,8 @@ public class LdLine : NotifyObject
 
     public string GetLogicalStatement()
     {
-        return new LineStatementCompiler(Elements).ToString();
+        var comp = new LineStatementCompiler(Elements);
+        comp.Parse();
+        return comp.ToString();
     }
 }

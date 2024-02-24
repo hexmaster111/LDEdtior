@@ -11,11 +11,6 @@ public enum Operator
     Or
 }
 
-public interface IPrintable
-{
-    string ToString();
-}
-
 public class LineStatementCompiler
 {
     public LineStatementCompiler(IList<LdElement> elements)
@@ -28,7 +23,7 @@ public class LineStatementCompiler
         {
             var row = elem.LinePos.Row;
             var col = elem.LinePos.Col;
-           _elements[col, row] = elem;
+            _elements[col, row] = elem;
         }
     }
 
@@ -37,20 +32,23 @@ public class LineStatementCompiler
     private readonly int _maxRows;
 
 
-    private LdElement? GetElement(int col, int row)
+    private LdElement? GetElement(int row, int col)
     {
         if (col < 0 || col > _maxCols || row < 0 || row > _maxRows) return null;
         return _elements[col, row];
     }
 
-    private LdElement? GetElement(RowCol pos) => GetElement(pos.Col, pos.Row);
+    private LdElement? GetElement(RowCol pos) => GetElement(pos.Row, pos.Col);
 
-    public override string ToString()
+    private string _result = "";
+
+    public void Parse()
     {
         var root = Parse(0, 0);
-
-        return root.ToString();
+        _result = root;
     }
+
+    public override string ToString() => _result;
 
 
     //TODO: Think like we are walking down a diagram one element at a time like you would read it
@@ -61,14 +59,18 @@ public class LineStatementCompiler
     // a & b & ( ( c & d ) || ( x & y ) ) = x
     // no a & b
     //    ( c & d ) || ( x & y ) = x
-    private string Parse(int r, int c)
+
+
+    /// <param name="isRecursiveOrBranchCall">used to tell if we end parsing at OBE or at COIL element</param>
+    private string Parse(int r, int c, bool isRecursiveOrBranchCall = false)
     {
         List<LdElement> andList = new();
         var o = "";
-
+        Stack<RowCol> nextBranchStart = new();
+        bool needsClose = false;
         while (true)
         {
-            var elem = GetElement(c, r);
+            var elem = GetElement(r, c);
             if (elem == null) throw new LdException("Expected Element", new RowCol(r, c));
             switch (elem.ElementType)
             {
@@ -76,46 +78,61 @@ public class LineStatementCompiler
                 {
                     //Figuring out what the elem below is
 
-                    var oneBelow = GetElement(c, r + 1);
+                    var oneBelow = GetElement(r + 1, c);
 
-                    if (oneBelow?.ElementType == ElementType.OrBranchStart) goto start_or_wire;
-                    if (oneBelow?.ElementType == ElementType.OrBranchEnd) goto end_or_wire;
+                    if (oneBelow?.ElementType == ElementType.OrBranchStart)
+                    {
+                        nextBranchStart.Push(oneBelow.LinePos);
+                        goto start_or_wire;
+                    }
+
+                    if (oneBelow?.ElementType == ElementType.OrBranchEnd)
+                    {
+                        goto end_or_wire;
+                    }
+
                     throw new LdException("Expected OrBranchStart or OrBranchEnd", new RowCol(r, c));
-
-                   
 
 
                     end_or_wire: // the elem r + 1 is an OrBranchEnd
-                    if (andList.Count == 0) throw new LdException("No elements in branch!", new RowCol(r, c));
+                    if (andList.Count == 0) goto nextElement;
 
+                    var lastAndElement = andList.Last();
+                    foreach (var e in andList)
                     {
-                        var lastAndElement = andList.Last();
-                        foreach (var e in andList)
+                        o += e.Label;
+                        if (!ReferenceEquals(e, lastAndElement))
                         {
-                            o += e.Label;
-                            if (!ReferenceEquals(e, lastAndElement))
-                            {
-                                o += " & ";
-                            }
+                            o += " & ";
                         }
-
-                        andList.Clear();
-
-                        o += ") ||";
                     }
 
+                    andList.Clear();
+
+                    o += ")||";
+
+                    //we hit the end of this and branch, lets go do the next or
+
+                    var pos = nextBranchStart.Pop();
+
+                    o += "(" + Parse(pos.Row, pos.Col, true) + ")";
+                    if (needsClose) o += ")";
+                    needsClose = false;
+                    break;
 
                     start_or_wire: // the elem r + 1 is an OrBranchStart
                     if (andList.Count != 0)
                     {
                         //print a & b
-                        var lastAndElement = andList.Last();
+                        var lastAndElem = andList.Last();
                         foreach (var e in andList)
                         {
+                            if (!string.IsNullOrEmpty(o) && o.Last() != '&') o += '&';
+
                             o += e.Label;
-                            if (!ReferenceEquals(e, lastAndElement))
+                            if (!ReferenceEquals(e, lastAndElem))
                             {
-                                o += " & ";
+                                o += "&";
                             }
                         }
 
@@ -125,11 +142,52 @@ public class LineStatementCompiler
                     }
 
                     o += '(';
+                    needsClose = true;
                     goto nextElement;
                 }
 
-                case ElementType.OrBranchEnd: break;
-                case ElementType.OrBranchStart: break;
+                case ElementType.OrBranchEnd:
+                    if (isRecursiveOrBranchCall)
+                    {
+                        if (andList.Count != 0)
+                        {
+                            //print a & b
+                            var lastAndElem = andList.Last();
+                            foreach (var e in andList)
+                            {
+                                o += e.Label;
+                                if (!ReferenceEquals(e, lastAndElem))
+                                {
+                                    o += "&";
+                                }
+                            }
+
+                            andList.Clear();
+                            
+                        }
+
+                        if (nextBranchStart.TryPop(out var next))
+                        {
+                            var p = Parse(next.Row, next.Col, true);
+                            return $"({o})||({p})";
+                        }
+
+                        return o;
+                    }
+
+                    break;
+                case ElementType.OrBranchStart:
+                {
+                    // Check if there is a OBS below us, to make sure this isnt appart of a larger 
+                    //or calling chain
+                    var below = GetElement(r + 1, c);
+                    if (below != null && below.ElementType == ElementType.OrBranchStart)
+                    {
+                        nextBranchStart.Push(below.LinePos);
+                    }
+
+                    goto nextElement;
+                }
 
                 case ElementType.NormallyOpenContact:
                 case ElementType.NormallyClosedContact:
@@ -149,16 +207,21 @@ public class LineStatementCompiler
                     if (andList.Count != 0)
                     {
                         var lastAndElement = andList.Last();
+
+
                         foreach (var e in andList)
                         {
+                            if (!string.IsNullOrEmpty(o) && o.Last() != '&') o += "&";
+
                             o += e.Label;
                             if (!ReferenceEquals(e, lastAndElement))
                             {
-                                o += " & ";
+                                o += "&";
                             }
                         }
                     }
-                    
+
+
                     return "(" + o + ") = " + elem.Label;
                 case ElementType.Nothing:
                 default:

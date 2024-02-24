@@ -20,7 +20,7 @@ public struct RowCol
 
     public override int GetHashCode() => HashCode.Combine(Row.GetHashCode(), Col.GetHashCode());
 
-    public override string ToString() => $"Row {Row} - Col {Col}";
+    public override string ToString() => $"({Row},{Col})";
 
     public static bool operator ==(RowCol left, RowCol right) => left.Equals(right);
 

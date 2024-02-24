@@ -1,24 +1,35 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using LdLib;
+using LDEditor.Uc;
 using LdLib.Types;
-using Microsoft.Win32;
 using Newtonsoft.Json;
 
 namespace LDEditor;
 
+public class UiOptions : NotifyObject
+{
+    private bool _ShowRowColOnUiElements = false;
+
+    public bool ShowRowColOnUiElements
+    {
+        get => _ShowRowColOnUiElements;
+        set => SetFieldAndTell(ref _ShowRowColOnUiElements, value,
+            nameof(ShowRowColOnUiElements),
+            nameof(ShowRowColOnUiElementsVisibility)
+        );
+    }
+
+    public Visibility ShowRowColOnUiElementsVisibility =>
+        ShowRowColOnUiElements ? Visibility.Visible : Visibility.Collapsed;
+}
+
 public class MainWindowViewModel : NotifyObject
 {
+    public UiOptions UiOptions { get; } = MainWindow.UiOptions;
+
     private LdDocument _ActiveDocument = new LdDocument();
 
     public LdDocument ActiveDocument
@@ -44,6 +55,8 @@ public partial class MainWindow : Window
         {
         };
     }
+
+    public static UiOptions UiOptions { get; set; } = new();
 
     private void NewElem_MouseMove(object sender, MouseEventArgs e)
     {
@@ -93,7 +106,7 @@ public partial class MainWindow : Window
 
     private void CompOut_OnClick(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show(_vm.ActiveDocument.Lines.First().GetLogicalStatement());
+        BigPopup.ShowDialog(_vm.ActiveDocument.Lines.First().GetLogicalStatement());
     }
 
     private void Save_OnClick(object sender, RoutedEventArgs e)
@@ -110,5 +123,24 @@ public partial class MainWindow : Window
             var obj = JsonConvert.DeserializeObject<LdDocument>(text);
             if (obj != null) _vm.ActiveDocument = obj;
         }
+    }
+}
+
+internal static class BigPopup
+{
+    public static void ShowDialog(string text)
+    {
+        var wind = new Window()
+        {
+            Height = 266,
+            Content = new Viewbox()
+            {
+                Child = new TextBlock()
+                {
+                    Text = text
+                }
+            }
+        };
+        wind.ShowDialog();
     }
 }
