@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LDEditor", "LDEditor\LDEdit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LdLib", "LdLib\LdLib.csproj", "{896A902E-441D-4C24-A13A-F0C7CD62E6B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LDEditorAvalonia", "LDEditorAvalonia\LDEditorAvalonia.csproj", "{C2AED05C-382E-4EF5-A32A-50A3E6F6884C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{896A902E-441D-4C24-A13A-F0C7CD62E6B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{896A902E-441D-4C24-A13A-F0C7CD62E6B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{896A902E-441D-4C24-A13A-F0C7CD62E6B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2AED05C-382E-4EF5-A32A-50A3E6F6884C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2AED05C-382E-4EF5-A32A-50A3E6F6884C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2AED05C-382E-4EF5-A32A-50A3E6F6884C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2AED05C-382E-4EF5-A32A-50A3E6F6884C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

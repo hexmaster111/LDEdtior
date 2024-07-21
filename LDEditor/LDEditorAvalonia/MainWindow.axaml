@@ -1,0 +1,88 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ldEditorAvalonia="clr-namespace:LDEditorAvalonia"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="LDEditorAvalonia.MainWindow"
+        Title="LDEditorAvalonia"
+        x:DataType="ldEditorAvalonia:MainWindowViewModel">
+    <DockPanel>
+
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="do it!" Click="CompOut_OnClick" />
+            <MenuItem Header="Save" Click="Save_OnClick" />
+            <MenuItem Header="Load" Click="Load_OnClick" />
+            <MenuItem Header="Clear" Click="Clear_OnClick" />
+
+            <MenuItem Header="Ui Options">
+                <CheckBox IsChecked="{Binding UiOptions.ShowRowColOnUiElements}">
+                    <TextBlock Text="Show Row Col" />
+                </CheckBox>
+            </MenuItem>
+
+        </Menu>
+        <Grid ShowGridLines="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="255" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <GridSplitter Grid.Column="1" Background="DarkGray" Cursor="SizeWE" HorizontalAlignment="Stretch" />
+            <Grid Grid.Column="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <!-- Project Items -->
+                    <TextBox Name="Code" Grid.Row="0" TextChanged="TextBoxBase_OnTextChanged" AcceptsReturn="True"
+                             AcceptsTab="True" />
+                    <TextBlock Grid.Row="1" Name="Output"></TextBlock>
+                </Grid>
+            </Grid>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Menu Grid.Row="0" FontSize="24">
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="---------" Tag="Wire" />
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="+----    "
+                              Tag="OrBranchStart" />
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="----+    "
+                              Tag="OrBranchEnd" />
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="----+----" Tag="OrWire" />
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="---| |---"
+                              Tag="NormallyOpenContact" />
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="---|/|---"
+                              Tag="NormallyClosedContact" />
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="---( )---" Tag="Coil" />
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="---(/)---"
+                              Tag="NegatedCoil" />
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="---(S)---"
+                              Tag="SetLatchCoil" />
+                    <MenuItem PointerMoved="NewElem_MouseMove" Click="NewElem_OnClick" Header="---(R)---"
+                              Tag="ResetLatchCoil" />
+                    <MenuItem Click="AddRung_OnClick" Header="[Add Rung]">
+                    </MenuItem>
+                </Menu>
+
+
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding ActiveDocument.Lines}"
+                         HorizontalAlignment="Stretch">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <uc:UcLdLine DataContext="{Binding}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+            </Grid>
+
+        </Grid>
+    </DockPanel>
+</Window>
