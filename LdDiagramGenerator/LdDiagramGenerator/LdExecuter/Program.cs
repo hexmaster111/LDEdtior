@@ -1,7 +1,7 @@
 ﻿/*     X1         X2         X4                     O1
- * ---|  |---+---|  |-------|  |-------------------( )---
- *     X3    |
- * ---|  |---+
+ * ---|  |---+---|  |---+---|  |---+---------------( )---
+ *     X3    |          |    X6    |
+ * ---|  |---+          +---|  |---+ 
  *    X5     |
  * ---|  |---+
  *
@@ -10,10 +10,11 @@
 Dictionary<string, bool> io = new()
 {
     { "X1", false },
-    { "X2", false },
+    { "X2", true },
     { "X3", false },
     { "X4", false },
-    { "X5", false },
+    { "X5", true },
+    { "X6", true },
     { "O1", false }
 };
 
@@ -26,6 +27,12 @@ Node L0X2NO = new()
             Attached = [],
             Kind = Node.NodeKind.No,
             Label = "X4"
+        }, 
+        new Node()
+        {
+            Attached = [],
+            Kind = Node.NodeKind.No,
+            Label = "X6"
         }
     ],
     Label = "X2",

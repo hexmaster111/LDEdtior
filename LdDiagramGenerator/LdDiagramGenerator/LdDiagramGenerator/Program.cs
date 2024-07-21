@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 
-const int elemWidth = 10;
+const int elemWidth = 9;
 const int elemHeight = 2;
 
-
-Node L0X2NO = new()
+Node L0X7NO = new()
 {
     Attached =
     [
@@ -13,7 +12,42 @@ Node L0X2NO = new()
         {
             Attached = [],
             Kind = Node.NodeKind.No,
+            Label = "X8"
+        },
+        new Node()
+        {
+            Attached =
+            [
+                new()
+                {
+                    Attached = [],
+                    Kind = Node.NodeKind.No,
+                    Label = "X10" /*!bug! I print in the wrong spot!*/
+                }
+            ],
+            Kind = Node.NodeKind.Nc,
+            Label = "X9"
+        }
+    ],
+    Label = "X7",
+    Kind = Node.NodeKind.No
+};
+
+Node L0X2NO = new()
+{
+    Attached =
+    [
+        new Node()
+        {
+            Attached = [L0X7NO],
+            Kind = Node.NodeKind.No,
             Label = "X4"
+        },
+        new Node()
+        {
+            Attached = [L0X7NO],
+            Kind = Node.NodeKind.Nc,
+            Label = "X6"
         }
     ],
     Label = "X2",
@@ -54,18 +88,24 @@ void PrintRoot(LineRootNode rn)
 {
     GridLayoutBuilder<Node> gsb = new();
     PrintNodes(rn.Attached, gsb, 0, 0, new());
-    
 
 
     Console.Clear();
 
-    while (gsb.GetNext(out var n, out var r, out var c))
+    while (gsb.GetNext(out var n, out var s, out var r, out var c))
     {
-        Debug.Assert(n != null);
-        Console.SetCursorPosition(c * elemWidth, r * elemHeight);
-        Console.Write(NormaliseLabel(n!.Label));
-        Console.SetCursorPosition(c * elemWidth, (r * elemHeight) + 1);
-        Console.Write(n.Kind.LdSymble());
+        if (n != null)
+        {
+            Console.SetCursorPosition(c * elemWidth, r * elemHeight);
+            Console.Write(NormaliseLabel(n!.Label));
+            Console.SetCursorPosition(c * elemWidth, (r * elemHeight) + 1);
+            Console.Write(n.Kind.LdSymble());
+        }
+        else if (s != null)
+        {
+            Console.SetCursorPosition(c * elemWidth, r * elemHeight);
+            Console.Write(s);
+        }
     }
 
     Console.SetCursorPosition(0, Console.WindowHeight - 1);
@@ -82,9 +122,23 @@ void PrintNodes(Node[] attached, GridLayoutBuilder<Node> sb, int r, int c, List<
             printed.Add(an);
             printable.Add(an);
             sb.Add(r, c, an);
+
+            if (c > 0 && r > 0)
+            {
+                //print left side | wire
+                sb.Add(r, c, "|");
+            }
+
+            if (an.Attached.Length != 0 && r != 0)
+            {
+                // branch up | right side
+                sb.Add(r, c + 1, "|");
+            }
+
             r += 1;
         }
     }
+
 
     c += 1;
 
@@ -107,7 +161,7 @@ string NormaliseLabel(string lbl)
     if (lbl.Length <= elemWidth)
     {
         //center
-        int len = lbl.Length ;
+        int len = lbl.Length;
         int pad = (elemWidth - len) / 2;
         for (int i = 0; i < pad; i++)
         {
