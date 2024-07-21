@@ -3,16 +3,14 @@
  *     X3    |
  * ---|  |---+
  *
- * O1 = ((X1 | X3) & X2)
- *
  */
 
 Dictionary<string, bool> io = new()
 {
     { "X1", false },
-    { "X2", true },
-    { "X3", true },
-    { "X4", true },
+    { "X2", false },
+    { "X3", false },
+    { "X4", false },
     { "O1", false }
 };
 
@@ -50,7 +48,9 @@ LineRootNode Line0Root = new()
         }
     ]
 };
+
 ExecuteLine(Line0Root);
+
 foreach (var v in io)
 {
     Console.Write(v.Key);
@@ -62,14 +62,14 @@ return;
 
 bool Examine(Node n)
 {
-    bool examin = n.Kind switch
+    bool examine = n.Kind switch
     {
         Node.NodeKind.No => io[n.Label],
         Node.NodeKind.Nc => !io[n.Label],
         _ => throw new ArgumentOutOfRangeException()
     };
 
-    if (!examin) return false;
+    if (!examine) return false;
 
     //we examined to the end
     if (n.Attached.Length == 0) return true;
