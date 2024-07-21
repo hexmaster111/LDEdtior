@@ -1,4 +1,9 @@
 ﻿using System.Collections;
+using System.Diagnostics;
+
+const int elemWidth = 10;
+const int elemHeight = 2;
+
 
 Node L0X2NO = new()
 {
@@ -31,6 +36,12 @@ LineRootNode Line0Root = new()
             Attached = [L0X2NO],
             Kind = Node.NodeKind.No,
             Label = "X3"
+        },
+        new()
+        {
+            Attached = [L0X2NO],
+            Kind = Node.NodeKind.No,
+            Label = "X5"
         }
     ]
 };
@@ -39,11 +50,25 @@ PrintRoot(Line0Root);
 
 return;
 
-
 void PrintRoot(LineRootNode rn)
 {
     GridLayoutBuilder<Node> gsb = new();
     PrintNodes(rn.Attached, gsb, 0, 0, new());
+    
+
+
+    Console.Clear();
+
+    while (gsb.GetNext(out var n, out var r, out var c))
+    {
+        Debug.Assert(n != null);
+        Console.SetCursorPosition(c * elemWidth, r * elemHeight);
+        Console.Write(NormaliseLabel(n!.Label));
+        Console.SetCursorPosition(c * elemWidth, (r * elemHeight) + 1);
+        Console.Write(n.Kind.LdSymble());
+    }
+
+    Console.SetCursorPosition(0, Console.WindowHeight - 1);
 }
 
 void PrintNodes(Node[] attached, GridLayoutBuilder<Node> sb, int r, int c, List<Node> printed)
@@ -70,40 +95,28 @@ void PrintNodes(Node[] attached, GridLayoutBuilder<Node> sb, int r, int c, List<
 }
 
 
-class GridLayoutBuilder<TItem> 
+string NormaliseLabel(string lbl)
 {
-    struct QueItem
+    if (lbl.Length >= elemWidth)
     {
-        public int Row, Col;
-        public TItem Val;
+        //trim
+        return lbl[..elemWidth];
     }
 
-    private readonly Queue<QueItem> _writeQueue = new();
 
-    public void Add(int r, int c, TItem val) => _writeQueue.Enqueue(new QueItem()
+    if (lbl.Length <= elemWidth)
     {
-        Row = r, Col = c, Val = val
-    });
-
-    public bool GetNext(out TItem? val, out int row, out int col)
-    {
-
-        bool b = _writeQueue.TryDequeue(out var qi);
-        if (b)
+        //center
+        int len = lbl.Length ;
+        int pad = (elemWidth - len) / 2;
+        for (int i = 0; i < pad; i++)
         {
-            val = qi.Val;
-            row = qi.Row;
-            col = qi.Col;
-        }
-        else
-        {
-            val = default(TItem);
-            row = 0;
-            col = 0;
+            lbl = " " + lbl;
         }
 
-        return b;
+        return lbl;
     }
 
-    
+    //exact, do nothing
+    return lbl;
 }

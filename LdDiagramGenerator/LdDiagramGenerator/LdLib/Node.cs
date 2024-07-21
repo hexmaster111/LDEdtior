@@ -12,3 +12,13 @@ public class Node
         Nc
     }
 }
+
+public static class Ext
+{
+    public static string LdSymble(this Node.NodeKind kind) => kind switch
+    {
+        Node.NodeKind.No => "---| |---",
+        Node.NodeKind.Nc => "---|/|---",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
+    };
+}

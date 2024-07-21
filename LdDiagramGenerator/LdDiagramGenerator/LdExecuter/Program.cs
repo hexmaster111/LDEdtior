@@ -2,6 +2,8 @@
  * ---|  |---+---|  |-------|  |-------------------( )---
  *     X3    |
  * ---|  |---+
+ *    X5     |
+ * ---|  |---+
  *
  */
 
@@ -11,6 +13,7 @@ Dictionary<string, bool> io = new()
     { "X2", false },
     { "X3", false },
     { "X4", false },
+    { "X5", false },
     { "O1", false }
 };
 
@@ -45,6 +48,12 @@ LineRootNode Line0Root = new()
             Attached = [L0X2NO],
             Kind = Node.NodeKind.No,
             Label = "X3"
+        },
+        new()
+        {
+            Attached = [L0X2NO],
+            Kind = Node.NodeKind.No,
+            Label = "X5"
         }
     ]
 };
