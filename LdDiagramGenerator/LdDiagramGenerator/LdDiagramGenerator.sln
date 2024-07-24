@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LdExecuter", "LdExecuter\Ld
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LdLib", "LdLib\LdLib.csproj", "{126AC8C3-00F9-4E3F-8A1A-2101F446D6E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LdEditor", "LdEditor\LdEditor.csproj", "{12D93B92-8B59-4E3F-88D9-E47792072352}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{126AC8C3-00F9-4E3F-8A1A-2101F446D6E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{126AC8C3-00F9-4E3F-8A1A-2101F446D6E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{126AC8C3-00F9-4E3F-8A1A-2101F446D6E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12D93B92-8B59-4E3F-88D9-E47792072352}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12D93B92-8B59-4E3F-88D9-E47792072352}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12D93B92-8B59-4E3F-88D9-E47792072352}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12D93B92-8B59-4E3F-88D9-E47792072352}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

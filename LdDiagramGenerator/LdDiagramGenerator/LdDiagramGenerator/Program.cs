@@ -17,14 +17,7 @@ Node L0X7NO = new()
         new Node()
         {
             Attached =
-            [
-                new()
-                {
-                    Attached = [],
-                    Kind = Node.NodeKind.No,
-                    Label = "X10" /*!bug! I print in the wrong spot!*/
-                }
-            ],
+            [],
             Kind = Node.NodeKind.Nc,
             Label = "X9"
         }

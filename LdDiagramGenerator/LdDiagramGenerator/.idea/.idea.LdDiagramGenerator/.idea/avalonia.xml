@@ -3,6 +3,7 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="LdEditor/UcDiagramElement.axaml" value="LdEditor/LdEditor.csproj" />
         <entry key="LdUi/UcLdElement.axaml" value="LdUi/LdUi.csproj" />
       </map>
     </option>
