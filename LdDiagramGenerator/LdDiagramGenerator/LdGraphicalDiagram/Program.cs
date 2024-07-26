@@ -2,19 +2,23 @@
 using Raylib_CsLo;
 using static Raylib_CsLo.Raylib;
 using static Raylib_CsLo.RayGui;
+using static Raylib_CsLo.RayMath;
+using static Raylib_CsLo.RlGl;
+
+using System.Numerics;
 
 
-Node L0X7NO = new()
+LdNode L0X7NO = new()
 {
     Attached =
     [
-        new Node()
+        new LdNode()
         {
             Attached = [],
             Kind = Node.NodeKind.No,
             Label = "X8"
         },
-        new Node()
+        new LdNode()
         {
             Attached =
                 [],
@@ -26,17 +30,17 @@ Node L0X7NO = new()
     Kind = Node.NodeKind.No
 };
 
-Node L0X2NO = new()
+LdNode L0X2NO = new()
 {
     Attached =
     [
-        new Node()
+        new LdNode()
         {
             Attached = [L0X7NO],
             Kind = Node.NodeKind.No,
             Label = "X4"
         },
-        new Node()
+        new LdNode()
         {
             Attached = [L0X7NO],
             Kind = Node.NodeKind.Nc,
@@ -52,19 +56,19 @@ LineRootNode Line0Root = new()
     Outputs = ["O1"],
     Attached =
     [
-        new()
+        new LdNode()
         {
             Attached = [L0X2NO],
             Kind = Node.NodeKind.No,
             Label = "X1"
         },
-        new()
+        new LdNode()
         {
             Attached = [L0X2NO],
             Kind = Node.NodeKind.No,
             Label = "X3"
         },
-        new()
+        new LdNode()
         {
             Attached = [L0X2NO],
             Kind = Node.NodeKind.No,
@@ -73,36 +77,131 @@ LineRootNode Line0Root = new()
     ]
 };
 
-List<LdNode> _nodes = new();
-
+List<LdNode> nodes = Line0Root.Attached.SelectMany(x => x.Attached).Distinct().Cast<LdNode>().ToList();
 
 SetConfigFlags(ConfigFlags.FLAG_WINDOW_RESIZABLE);
-InitWindow(800, 480, "Hello World");
-SetTargetFPS(30);
 
-bool showMessageBox = false;
 
-while (!WindowShouldClose())
+/*******************************************************************************************
+*
+*   raylib [core] example - 2d camera mouse zoom
+*
+*   Example originally created with raylib 4.2, last time updated with raylib 4.2
+*
+*   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
+*   BSD-like license that allows static linking with closed source software
+*
+*   Copyright (c) 2022-2024 Jeffery Myers (@JeffM2501)
+*
+********************************************************************************************/
+
+
+
+//------------------------------------------------------------------------------------
+// Program main entry point
+//------------------------------------------------------------------------------------
+
+// Initialization
+//--------------------------------------------------------------------------------------
+const int screenWidth = 800;
+const int screenHeight = 450;
+
+InitWindow(screenWidth, screenHeight, "LD");
+
+Camera2D camera = new();
+camera.zoom = 1.0f;
+
+int zoomMode = 0;   // 0-Mouse Wheel, 1-Mouse Move
+
+SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
+                                    //--------------------------------------------------------------------------------------
+
+// Main game loop
+while (!WindowShouldClose())        // Detect window close button or ESC key
 {
+    // Update
+    //----------------------------------------------------------------------------------
+    if (IsKeyPressed(KeyboardKey.KEY_ONE)) zoomMode = 0;
+    else if (IsKeyPressed(KeyboardKey.KEY_TWO)) zoomMode = 1;
+
+    // Translate based on mouse right click
+    if (IsMouseButtonDown(MouseButton.MOUSE_BUTTON_RIGHT))
+    {
+        Vector2 delta = GetMouseDelta();
+        delta = Vector2Scale(delta, -1.0f / camera.zoom);
+        camera.target = Vector2Add(camera.target, delta);
+    }
+
+    // if (zoomMode == 0)
+    // {
+    //     // Zoom based on mouse wheel
+    //     float wheel = GetMouseWheelMove();
+    //     if (wheel != 0)
+    //     {
+    //         // Get the world point that is under the mouse
+    //         Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
+
+    //         // Set the offset to where the mouse is
+    //         camera.offset = GetMousePosition();
+
+    //         // Set the target to match, so that the camera maps the world space point 
+    //         // under the cursor to the screen space point under the cursor at any zoom
+    //         camera.target = mouseWorldPos;
+
+    //         // Zoom increment
+    //         float scaleFactor = 1.0f + (0.25f * fabsf(wheel));
+    //         if (wheel < 0) scaleFactor = 1.0f / scaleFactor;
+    //         camera.zoom = Math.Clamp(camera.zoom * scaleFactor, 0.125f, 64.0f);
+    //     }
+    // }
+
+    //----------------------------------------------------------------------------------
+
+    // Draw
+    //----------------------------------------------------------------------------------
     BeginDrawing();
-    ClearBackground(WHITE);
+    ClearBackground(RAYWHITE);
 
-    LdGraphics.RenderNodeGraph(Line0Root);
+    BeginMode2D(camera);
 
-    var mousePosition = GetMousePosition();
-    var displayWidth = GetScreenWidth();
-    var displayHeight = GetScreenHeight();
+    // Draw the 3d grid, rotated 90 degrees and centered around 0,0 
+    // just so we have something in the XY plane
+    rlPushMatrix();
+    rlTranslatef(0, 25 * 50, 0);
+    rlRotatef(90, 1, 0, 0);
+    DrawGrid(100, 50);
+    rlPopMatrix();
 
-    DrawText($"{mousePosition}", 5, 5, 18, BLACK);
-    DrawText($"{displayWidth} {displayHeight}", 5, 23, 18, BLACK);
 
+    SetMouseOffset((int)camera.target.X, (int)camera.target.Y);
+    //SetMouseScale(1 + camera.zoom, 1 + camera.zoom);
+    var mp = GetMousePosition();
+    DrawCircle((int)mp.X, (int)mp.Y, 5, RED);
+    if (GuiButton(new Rectangle(0, 0, 128, 24), "Some Button"))
+    {
+
+    }
+
+    //SetMouseScale(1, 1);
+    SetMouseOffset(0, 0);
+
+    EndMode2D();
+
+    if (GuiButton(new Rectangle(0, 0, 128, 24), "Some Button"))
+    {
+
+    }
 
     EndDrawing();
+    //----------------------------------------------------------------------------------
 }
 
-CloseWindow();
+// De-Initialization
+//--------------------------------------------------------------------------------------
+CloseWindow();        // Close window and OpenGL context
+                      //--------------------------------------------------------------------------------------
+return 0;
 
-public class LdNode : Node
-{
-    public int X, Y, Width, Height, InX, InY, OutX, OutY;
-}
+
+
+
