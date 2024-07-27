@@ -77,31 +77,10 @@ LineRootNode Line0Root = new()
     ]
 };
 
-List<LdNode> nodes = Line0Root.Attached.SelectMany(x => x.Attached).Distinct().Cast<LdNode>().ToList();
 
 SetConfigFlags(ConfigFlags.FLAG_WINDOW_RESIZABLE);
 
-
-/*******************************************************************************************
-*
-*   raylib [core] example - 2d camera mouse zoom
-*
-*   Example originally created with raylib 4.2, last time updated with raylib 4.2
-*
-*   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
-*   BSD-like license that allows static linking with closed source software
-*
-*   Copyright (c) 2022-2024 Jeffery Myers (@JeffM2501)
-*
-********************************************************************************************/
-
-
-
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-
-// Initialization
+// RL Initialization
 //--------------------------------------------------------------------------------------
 const int screenWidth = 800;
 const int screenHeight = 450;
@@ -112,6 +91,11 @@ Camera2D camera = new();
 camera.zoom = 1.0f;
 
 int zoomMode = 0;   // 0-Mouse Wheel, 1-Mouse Move
+
+var tilesTexture = LoadTexture("sc.png");
+int inBetweenSpriteSpace = 1;
+int spriteSize = 64;
+
 
 SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
                                     //--------------------------------------------------------------------------------------
@@ -169,7 +153,7 @@ while (!WindowShouldClose())        // Detect window close button or ESC key
     rlPushMatrix();
     rlTranslatef(0, 25 * 50, 0);
     rlRotatef(90, 1, 0, 0);
-    DrawGrid(100, 50);
+    DrawGrid(100, 64);
     rlPopMatrix();
 
 
@@ -177,10 +161,19 @@ while (!WindowShouldClose())        // Detect window close button or ESC key
     //SetMouseScale(1 + camera.zoom, 1 + camera.zoom);
     var mp = GetMousePosition();
     DrawCircle((int)mp.X, (int)mp.Y, 5, RED);
-    if (GuiButton(new Rectangle(0, 0, 128, 24), "Some Button"))
-    {
+    // if (GuiButton(new Rectangle(0, 0, 128, 24), "Some Button"))
+    // {
 
-    }
+    // }
+
+
+    const int gridWidthPx = 64, gridHeightPx = 64;
+
+    int gridRow = 1, gridCol = 1;
+
+    int tlPx = gridWidthPx * gridRow;
+    int tlPy = gridHeightPx * gridCol;
+
 
     //SetMouseScale(1, 1);
     SetMouseOffset(0, 0);
