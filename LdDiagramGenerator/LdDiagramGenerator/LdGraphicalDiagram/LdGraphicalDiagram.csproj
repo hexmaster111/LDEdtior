@@ -15,4 +15,10 @@
       <ProjectReference Include="..\LdLib\LdLib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Assets\sc.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
