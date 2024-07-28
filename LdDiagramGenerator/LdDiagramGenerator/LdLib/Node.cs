@@ -1,3 +1,6 @@
+using System.Diagnostics;
+
+[DebuggerDisplay("[{GetHashCode()}:{Kind}:{Label}]")]
 public class Node
 {
     public Node[] Attached;
