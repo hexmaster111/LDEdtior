@@ -59,21 +59,15 @@ public class InteractiveLdBuilder
         }
     }
 
-    public void PlaceItem(Sprite element, string label, Node? node=null)
+    public void PlaceItem(Sprite element, string label, Node? node = null) => LdElems[Selected] = new LdElem()
     {
-        LdElems[Selected] = new LdElem()
-        {
-            Kind = element,
-            Label = label,
-            Node = node,
-        };
-    }
-    
+        Kind = element,
+        Label = label,
+        Node = node,
+    };
 
-    public void DeleteItem()
-    {
-        LdElems.Remove(Selected);
-    }
+
+    public void DeleteItem() => LdElems.Remove(Selected);
 
     public void EditItemProperties()
     {
@@ -87,35 +81,12 @@ public class InteractiveLdBuilder
 
     public void SelectLeft()
     {
-        Selected = Selected with
-        {
-            X = Selected.X - 1
-        };
+        Selected = Selected with { X = Selected.X - 1 };
     }
 
-    public void SelectRight()
-    {
-        Selected = Selected with
-        {
-            X = Selected.X + 1
-        };
-    }
-
-    public void SelectUp()
-    {
-        Selected = Selected with
-        {
-            Y = Selected.Y - 1
-        };
-    }
-
-    public void SelectDown()
-    {
-        Selected = Selected with
-        {
-            Y = Selected.Y + 1
-        };
-    }
+    public void SelectRight() => Selected = Selected with { X = Selected.X + 1 };
+    public void SelectUp() => Selected = Selected with { Y = Selected.Y - 1 };
+    public void SelectDown() => Selected = Selected with { Y = Selected.Y + 1 };
 
     private enum PopupKind
     {
@@ -195,24 +166,23 @@ public class InteractiveLdBuilder
 
     public void Wr(KeyValuePair<Point, LdElem> a, KeyValuePair<Point, LdElem> b)
     {
-        
     }
-    
+
     public void Wire(Node[] rAttached)
     {
         foreach (var n in rAttached)
         {
             var ld = GetElemFromNode(n);
-            Debug.Assert(ld.Value.Node!=null);
+            Debug.Assert(ld.Value.Node != null);
             foreach (var a in n.Attached)
             {
                 var aLd = GetElemFromNode(a);
-                Debug.Assert(aLd.Value.Node!=null);
-                Wr(ld,aLd);
+                Debug.Assert(aLd.Value.Node != null);
+                Wr(ld, aLd);
             }
         }
     }
-    
+
     public void LoadDiagram(LineRootNode r)
     {
         const int maxLen = 9;
@@ -236,9 +206,9 @@ public class InteractiveLdBuilder
         Selected = start with { X = start.X - 1 };
         for (int i = 0; i < r.Attached.Length; i++)
         {
-            PlaceItem(Sprite.BranchStart,"");
+            PlaceItem(Sprite.BranchStart, "");
             SelectDown();
-            PlaceItem(Sprite.DownWire,"");
+            PlaceItem(Sprite.DownWire, "");
             SelectDown();
         }
 
@@ -246,11 +216,12 @@ public class InteractiveLdBuilder
         Selected = start with { X = start.X + maxLen };
         for (int i = 0; i < r.Outputs.Length; i++)
         {
-            PlaceItem(Sprite.BranchEnd,"");
+            PlaceItem(Sprite.BranchEnd, "");
             SelectDown();
-            PlaceItem(Sprite.DownWire,"");
+            PlaceItem(Sprite.DownWire, "");
             SelectDown();
         }
+
         return;
     }
 }
