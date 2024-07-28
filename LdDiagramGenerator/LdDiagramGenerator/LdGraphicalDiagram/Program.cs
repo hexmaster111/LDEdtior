@@ -1,23 +1,25 @@
-﻿using LdGraphicalDiagram;
+﻿using System.Collections.ObjectModel;
+using System.Drawing;
 using Raylib_CsLo;
 using static Raylib_CsLo.Raylib;
 using static Raylib_CsLo.RayGui;
 using static Raylib_CsLo.RayMath;
 using static Raylib_CsLo.RlGl;
 using System.Numerics;
+using Rectangle = Raylib_CsLo.Rectangle;
 
 
-LdNode L0X7NO = new()
+Node L0X7NO = new()
 {
     Attached =
     [
-        new LdNode()
+        new Node()
         {
             Attached = [],
             Kind = Node.NodeKind.No,
             Label = "X8"
         },
-        new LdNode()
+        new Node()
         {
             Attached =
                 [],
@@ -29,17 +31,17 @@ LdNode L0X7NO = new()
     Kind = Node.NodeKind.No
 };
 
-LdNode L0X2NO = new()
+Node L0X2NO = new()
 {
     Attached =
     [
-        new LdNode()
+        new Node()
         {
             Attached = [L0X7NO],
             Kind = Node.NodeKind.No,
             Label = "X4"
         },
-        new LdNode()
+        new Node()
         {
             Attached = [L0X7NO],
             Kind = Node.NodeKind.Nc,
@@ -55,19 +57,19 @@ LineRootNode Line0Root = new()
     Outputs = ["O1"],
     Attached =
     [
-        new LdNode()
+        new Node()
         {
             Attached = [L0X2NO],
             Kind = Node.NodeKind.No,
             Label = "X1"
         },
-        new LdNode()
+        new Node()
         {
             Attached = [L0X2NO],
             Kind = Node.NodeKind.No,
             Label = "X3"
         },
-        new LdNode()
+        new Node()
         {
             Attached = [L0X2NO],
             Kind = Node.NodeKind.No,
@@ -96,11 +98,13 @@ if (sprites.id == 0) throw new Exception("Could not load assets!");
 
 int inBetweenSpriteSpace = 1;
 int spriteSize = 64;
-
+InteractiveLdBuilder interact = new();
 SetTargetFPS(60);
+//HideCursor();
 // Main game loop
 while (!WindowShouldClose())
 {
+    if (interact.IsPopupOpen) goto Draw;
     // Update
     //----------------------------------------------------------------------------------
     if (IsKeyPressed(KeyboardKey.KEY_ONE)) zoomMode = 0;
@@ -114,33 +118,28 @@ while (!WindowShouldClose())
         camera.target = Vector2Add(camera.target, delta);
     }
 
-    // if (zoomMode == 0)
-    // {
-    //     // Zoom based on mouse wheel
-    //     float wheel = GetMouseWheelMove();
-    //     if (wheel != 0)
-    //     {
-    //         // Get the world point that is under the mouse
-    //         Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
+    // scrolling
+    float wheel = GetMouseWheelMove();
+    if (wheel != 0)
+    {
+        camera.offset.Y += wheel;
+    }
 
-    //         // Set the offset to where the mouse is
-    //         camera.offset = GetMousePosition();
+    if (IsKeyPressed(KeyboardKey.KEY_LEFT)) interact.SelectLeft();
+    if (IsKeyPressed(KeyboardKey.KEY_RIGHT)) interact.SelectRight();
+    if (IsKeyPressed(KeyboardKey.KEY_UP)) interact.SelectUp();
+    if (IsKeyPressed(KeyboardKey.KEY_DOWN)) interact.SelectDown();
 
-    //         // Set the target to match, so that the camera maps the world space point 
-    //         // under the cursor to the screen space point under the cursor at any zoom
-    //         camera.target = mouseWorldPos;
-
-    //         // Zoom increment
-    //         float scaleFactor = 1.0f + (0.25f * fabsf(wheel));
-    //         if (wheel < 0) scaleFactor = 1.0f / scaleFactor;
-    //         camera.zoom = Math.Clamp(camera.zoom * scaleFactor, 0.125f, 64.0f);
-    //     }
-    // }
+    if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.DeleteItem();
+    if (IsKeyPressed(KeyboardKey.KEY_ONE)) interact.PlaceItem(Sprite.Wire, "");
+    if (IsKeyPressed(KeyboardKey.KEY_TWO)) interact.PlaceItem(Sprite.No, "LBL");
+    if (IsKeyPressed(KeyboardKey.KEY_P)) interact.EditItemProperties();
 
     //----------------------------------------------------------------------------------
 
     // Draw
     //----------------------------------------------------------------------------------
+    Draw:
     BeginDrawing();
     ClearBackground(BLACK);
 
@@ -157,8 +156,9 @@ while (!WindowShouldClose())
 
     SetMouseOffset((int)camera.target.X, (int)camera.target.Y);
     var mp = GetMousePosition();
-    DrawCircle((int)mp.X, (int)mp.Y, 5, RED);
+    //DrawCircle((int)mp.X, (int)mp.Y, 5, RED);
     //GuiDrawIcon((int)GuiIconName.ICON_CURSOR_HAND, (int)mp.X, (int)mp.Y, 1, WHITE);
+    DrawPointerOnGrid(interact.Selected);
 
     for (var i = 1; i < 15; i++)
     {
@@ -166,36 +166,41 @@ while (!WindowShouldClose())
         DrawSpriteOnGrid(i, 10, Sprite.DownWire);
     }
 
-    DrawSpriteOnGrid(1, 0, Sprite.BranchStart);
-    DrawSpriteOnGrid(1, 1, Sprite.Wire);
+    foreach (var e in interact.LdElems)
+    {
+        DrawLdSpriteOnGrid(e.Key.Y, e.Key.X, e.Value.Label, e.Value.Kind);
+    }
 
-    DrawLdSpriteOnGrid(1, 2, "X01", Sprite.No);
-
-    //DrawSpriteOnGrid(1, 2, Sprite.No);
-    DrawSpriteOnGrid(1, 3, Sprite.OrBranch);
-
-    DrawSpriteOnGrid(2, 3, Sprite.DownWire);
-
-    DrawSpriteOnGrid(3, 3, Sprite.OrBranchStart);
-    DrawLdSpriteOnGrid(3, 4, "X02", Sprite.No);
-    DrawSpriteOnGrid(3, 5, Sprite.OrBranchEnd);
-
-    DrawSpriteOnGrid(2, 5, Sprite.DownWire);
-
-    DrawLdSpriteOnGrid(1, 4, "X03", Sprite.No);
-    DrawSpriteOnGrid(1, 5, Sprite.OrBranch);
-    DrawSpriteOnGrid(1, 6, Sprite.Wire);
-    DrawSpriteOnGrid(1, 7, Sprite.Wire);
-    DrawSpriteOnGrid(1, 8, Sprite.Wire);
-    DrawLdSpriteOnGrid(1, 9, "X02", Sprite.Coil);
-    DrawSpriteOnGrid(1, 10, Sprite.BranchEnd);
-
+    //
+    // DrawSpriteOnGrid(1, 0, Sprite.BranchStart);
+    // DrawSpriteOnGrid(1, 1, Sprite.Wire);
+    //
+    // DrawLdSpriteOnGrid(1, 2, "X01", Sprite.No);
+    //
+    // DrawSpriteOnGrid(1, 3, Sprite.OrBranch);
+    // DrawSpriteOnGrid(2, 3, Sprite.DownWire);
+    //
+    // DrawSpriteOnGrid(3, 3, Sprite.OrBranchStart);
+    // DrawLdSpriteOnGrid(3, 4, "X02", Sprite.No);
+    // DrawSpriteOnGrid(3, 5, Sprite.OrBranchEnd);
+    //
+    // DrawSpriteOnGrid(2, 5, Sprite.DownWire);
+    //
+    // DrawLdSpriteOnGrid(1, 4, "X03", Sprite.No);
+    // DrawSpriteOnGrid(1, 5, Sprite.OrBranch);
+    // DrawSpriteOnGrid(1, 6, Sprite.Wire);
+    // DrawSpriteOnGrid(1, 7, Sprite.Wire);
+    // DrawSpriteOnGrid(1, 8, Sprite.Wire);
+    // DrawLdSpriteOnGrid(1, 9, "X02", Sprite.Coil);
+    // DrawSpriteOnGrid(1, 10, Sprite.BranchEnd);
 
     SetMouseOffset(0, 0);
     EndMode2D();
     if (GuiButton(new Rectangle(0, 0, 128, 24), "Some Button"))
     {
     }
+
+    if (interact.IsPopupOpen) interact.DrawPopup();
 
     EndDrawing();
     //----------------------------------------------------------------------------------
@@ -205,8 +210,14 @@ while (!WindowShouldClose())
 //--------------------------------------------------------------------------------------
 CloseWindow(); // Close window and OpenGL context
 //--------------------------------------------------------------------------------------
-const int gridWidthPx = 64, gridHeightPx = 64, spritePaddingPx = 1, labelFontSize=32;
+const int gridWidthPx = 64, gridHeightPx = 64, spritePaddingPx = 1, labelFontSize = 32;
+
 return 0;
+
+void DrawPointerOnGrid(Point gp)
+{
+    DrawRectangle(gp.X * gridWidthPx, gp.Y * gridHeightPx, gridWidthPx, gridHeightPx, BLUE);
+}
 
 
 void DrawLdSpriteOnGrid(int row, int col, string lbl, Sprite spriteidx)
@@ -234,7 +245,108 @@ void DrawSpriteOnGrid(int row, int col, Sprite spriteIdx)
     DrawTexturePro(sprites, scLocation, destLocation, new(0, 0), 0, YELLOW);
 }
 
-enum Sprite
+public class InteractiveLdBuilder
+{
+    public Point Selected { get; private set; }
+    public bool IsPopupOpen => _openPopup != PopupKind.Nothing;
+
+    public readonly Dictionary<Point, LdElem> LdElems = new();
+    private PopupKind _openPopup = PopupKind.Nothing;
+
+    public struct LdElem
+    {
+        //I think here is where the node would end up going
+        public Sprite Kind;
+        public string Label;
+    }
+
+    private void ContactPropertiesUpdate()
+    {
+    }
+
+    private void DrawContactProperties()
+    {
+        DrawRectangle(50, 50, 512, 128, RAYWHITE);
+    }
+
+    public void DrawPopup()
+    {
+        switch (_openPopup)
+        {
+            default:
+            case PopupKind.Nothing:
+                break;
+            case PopupKind.NoContactProperties:
+                ContactPropertiesUpdate();
+                DrawContactProperties();
+                break;
+        }
+    }
+
+    public void PlaceItem(Sprite element, string label)
+    {
+        LdElems[Selected] = new LdElem()
+        {
+            Kind = element,
+            Label = label
+        };
+    }
+
+    public void DeleteItem()
+    {
+        LdElems.Remove(Selected);
+    }
+
+    public void EditItemProperties()
+    {
+        if (!LdElems.TryGetValue(Selected, out var item)) return;
+        _openPopup = item.Kind switch
+        {
+            Sprite.No => PopupKind.NoContactProperties,
+            _ => PopupKind.Nothing
+        };
+    }
+
+    public void SelectLeft()
+    {
+        Selected = Selected with
+        {
+            X = Selected.X - 1
+        };
+    }
+
+    public void SelectRight()
+    {
+        Selected = Selected with
+        {
+            X = Selected.X + 1
+        };
+    }
+
+    public void SelectUp()
+    {
+        Selected = Selected with
+        {
+            Y = Selected.Y - 1
+        };
+    }
+
+    public void SelectDown()
+    {
+        Selected = Selected with
+        {
+            Y = Selected.Y + 1
+        };
+    }
+
+    private enum PopupKind
+    {
+        Nothing,
+        NoContactProperties
+    }
+}
+
+public enum Sprite
 {
     Wire,
     No,
