@@ -5,7 +5,10 @@ using static Raylib_CsLo.Raylib;
 using static Raylib_CsLo.RayGui;
 using static Raylib_CsLo.RayMath;
 using static Raylib_CsLo.RlGl;
+using rlImGui_cs;
+using ImGuiNET;
 using System.Numerics;
+using System.Text;
 using Rectangle = Raylib_CsLo.Rectangle;
 
 
@@ -87,19 +90,32 @@ const int screenWidth = 800;
 const int screenHeight = 450;
 
 InitWindow(screenWidth, screenHeight, "LD");
+rlImGui.Setup(true); // sets up ImGui with ether a dark or light default theme
+
 
 Camera2D camera = new();
 camera.zoom = 1.0f;
 
-int zoomMode = 0; // 0-Mouse Wheel, 1-Mouse Move
-
 var sprites = LoadTexture("Assets/sc.png");
 if (sprites.id == 0) throw new Exception("Could not load assets!");
 
-int inBetweenSpriteSpace = 1;
-int spriteSize = 64;
+bool showGridLines = false;
+
 InteractiveLdBuilder interact = new();
+
+for (var i = 0; i < 15; i++)
+{
+    interact.MoveTo(new Point(0, i));
+    interact.PlaceItem(Sprite.DownWire, "");
+    interact.MoveTo(new Point(10, i));
+    interact.PlaceItem(Sprite.DownWire, "");
+}
+
+interact.MoveTo(new Point(0, 1));
+interact.PlaceItem(Sprite.BranchStart, "");
+
 SetTargetFPS(60);
+SetExitKey(0);
 //HideCursor();
 // Main game loop
 while (!WindowShouldClose())
@@ -107,8 +123,6 @@ while (!WindowShouldClose())
     if (interact.IsPopupOpen) goto Draw;
     // Update
     //----------------------------------------------------------------------------------
-    if (IsKeyPressed(KeyboardKey.KEY_ONE)) zoomMode = 0;
-    else if (IsKeyPressed(KeyboardKey.KEY_TWO)) zoomMode = 1;
 
     // Translate based on mouse right click
     if (IsMouseButtonDown(MouseButton.MOUSE_BUTTON_RIGHT) || IsKeyDown(KeyboardKey.KEY_LEFT_ALT))
@@ -131,27 +145,51 @@ while (!WindowShouldClose())
     if (IsKeyPressed(KeyboardKey.KEY_DOWN)) interact.SelectDown();
 
     if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.DeleteItem();
-    if (IsKeyPressed(KeyboardKey.KEY_ONE)) interact.PlaceItem(Sprite.Wire, "");
-    if (IsKeyPressed(KeyboardKey.KEY_TWO)) interact.PlaceItem(Sprite.No, "LBL");
     if (IsKeyPressed(KeyboardKey.KEY_P)) interact.EditItemProperties();
 
+    if (IsKeyPressed(KeyboardKey.KEY_ONE)) interact.PlaceItem(Sprite.Wire, "");
+    if (IsKeyPressed(KeyboardKey.KEY_TWO)) interact.PlaceItem(Sprite.No, "LBL");
+    if (IsKeyPressed(KeyboardKey.KEY_THREE)) interact.PlaceItem(Sprite.Nc, "LBL");
+    if (IsKeyPressed(KeyboardKey.KEY_FOUR)) interact.PlaceItem(Sprite.Coil, "LBL");
+    if (IsKeyPressed(KeyboardKey.KEY_FIVE)) interact.PlaceItem(Sprite.OrBranch, "");
+    if (IsKeyPressed(KeyboardKey.KEY_SIX)) interact.PlaceItem(Sprite.BranchStart, "");
+    if (IsKeyPressed(KeyboardKey.KEY_SEVEN)) interact.PlaceItem(Sprite.DownWire, "");
+    if (IsKeyPressed(KeyboardKey.KEY_EIGHT)) interact.PlaceItem(Sprite.OrBranchEnd, "");
+    if (IsKeyPressed(KeyboardKey.KEY_NINE)) interact.PlaceItem(Sprite.OrBranchStart, "");
+    if (IsKeyPressed(KeyboardKey.KEY_ZERO)) interact.PlaceItem(Sprite.BranchEnd, "");
+
+    bool ToolBarButton( int buttonLoc, string label) =>  GuiButton(new Rectangle(128*buttonLoc, 0,128,32), label);
+
+    void DrawLast()
+    {
+        ToolBarButton(0, @"-------");
+        ToolBarButton(1, @"--| |--");
+        ToolBarButton(2, @"--|\|--");
+        ToolBarButton(3, @"--( )--");
+        ToolBarButton(4, @"BRANCH");
+        ToolBarButton(5, @"END BR");
+    }
+    
     //----------------------------------------------------------------------------------
 
     // Draw
     //----------------------------------------------------------------------------------
     Draw:
     BeginDrawing();
+    rlImGui.Begin(); // starts the ImGui content mode. Make all ImGui calls after this
     ClearBackground(BLACK);
-
     BeginMode2D(camera);
 
-    // Draw the 3d grid, rotated 90 degrees and centered around 0,0 
-    // just so we have something in the XY plane
-    rlPushMatrix();
-    rlTranslatef(0, 25 * 64, 0);
-    rlRotatef(90, 1, 0, 0);
-    DrawGrid(100, 64);
-    rlPopMatrix();
+    if (showGridLines)
+    {
+        // Draw the 3d grid, rotated 90 degrees and centered around 0,0 
+        // just so we have something in the XY plane
+        rlPushMatrix();
+        rlTranslatef(0, 25 * 64, 0);
+        rlRotatef(90, 1, 0, 0);
+        DrawGrid(100, 64);
+        rlPopMatrix();
+    }
 
 
     SetMouseOffset((int)camera.target.X, (int)camera.target.Y);
@@ -160,51 +198,26 @@ while (!WindowShouldClose())
     //GuiDrawIcon((int)GuiIconName.ICON_CURSOR_HAND, (int)mp.X, (int)mp.Y, 1, WHITE);
     DrawPointerOnGrid(interact.Selected);
 
-    for (var i = 1; i < 15; i++)
-    {
-        DrawSpriteOnGrid(i, 0, Sprite.DownWire);
-        DrawSpriteOnGrid(i, 10, Sprite.DownWire);
-    }
 
     foreach (var e in interact.LdElems)
     {
         DrawLdSpriteOnGrid(e.Key.Y, e.Key.X, e.Value.Label, e.Value.Kind);
     }
 
-    //
-    // DrawSpriteOnGrid(1, 0, Sprite.BranchStart);
-    // DrawSpriteOnGrid(1, 1, Sprite.Wire);
-    //
-    // DrawLdSpriteOnGrid(1, 2, "X01", Sprite.No);
-    //
-    // DrawSpriteOnGrid(1, 3, Sprite.OrBranch);
-    // DrawSpriteOnGrid(2, 3, Sprite.DownWire);
-    //
-    // DrawSpriteOnGrid(3, 3, Sprite.OrBranchStart);
-    // DrawLdSpriteOnGrid(3, 4, "X02", Sprite.No);
-    // DrawSpriteOnGrid(3, 5, Sprite.OrBranchEnd);
-    //
-    // DrawSpriteOnGrid(2, 5, Sprite.DownWire);
-    //
-    // DrawLdSpriteOnGrid(1, 4, "X03", Sprite.No);
-    // DrawSpriteOnGrid(1, 5, Sprite.OrBranch);
-    // DrawSpriteOnGrid(1, 6, Sprite.Wire);
-    // DrawSpriteOnGrid(1, 7, Sprite.Wire);
-    // DrawSpriteOnGrid(1, 8, Sprite.Wire);
-    // DrawLdSpriteOnGrid(1, 9, "X02", Sprite.Coil);
-    // DrawSpriteOnGrid(1, 10, Sprite.BranchEnd);
 
     SetMouseOffset(0, 0);
     EndMode2D();
-    if (GuiButton(new Rectangle(0, 0, 128, 24), "Some Button"))
-    {
-    }
+    showGridLines = GuiCheckBox(new Rectangle(0, 0, 32, 24), "Show Grid Lines", showGridLines);
+
 
     if (interact.IsPopupOpen) interact.DrawPopup();
 
+    rlImGui.End(); // ends the ImGui content mode. Make all ImGui calls before this
     EndDrawing();
     //----------------------------------------------------------------------------------
 }
+
+rlImGui.Shutdown(); // cleans up ImGui
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
@@ -260,13 +273,29 @@ public class InteractiveLdBuilder
         public string Label;
     }
 
-    private void ContactPropertiesUpdate()
-    {
-    }
 
     private void DrawContactProperties()
     {
-        DrawRectangle(50, 50, 512, 128, RAYWHITE);
+        ImGui.Begin("Contact");
+        {
+            var tmp = Encoding.ASCII.GetBytes(LdElems[Selected].Label).Concat(new byte[1]).ToArray();
+
+            if (ImGui.InputText("Label", tmp, (uint)tmp.Length))
+            {
+                LdElems[Selected] = LdElems[Selected] with
+                {
+                    Label = Encoding.ASCII.GetString(tmp)
+                };
+            }
+
+            if (ImGui.Button("Close") ||
+                IsKeyDown(KeyboardKey.KEY_ESCAPE) ||
+                IsKeyPressed(KeyboardKey.KEY_ENTER))
+            {
+                _openPopup = PopupKind.Nothing;
+            }
+        }
+        ImGui.End();
     }
 
     public void DrawPopup()
@@ -277,7 +306,6 @@ public class InteractiveLdBuilder
             case PopupKind.Nothing:
                 break;
             case PopupKind.NoContactProperties:
-                ContactPropertiesUpdate();
                 DrawContactProperties();
                 break;
         }
@@ -290,6 +318,37 @@ public class InteractiveLdBuilder
             Kind = element,
             Label = label
         };
+
+        switch (element)
+        {
+            case Sprite.Wire:
+            case Sprite.Nc:
+            case Sprite.No:
+                SelectRight();
+                break;
+            case Sprite.CoilSet:
+            case Sprite.CoilReset:
+            case Sprite.Coil:
+                //place next branch start?
+                MoveTo(new Point(1, Selected.Y + 2));
+                break;
+          
+            case Sprite.OrBranch:
+                
+                break;
+            case Sprite.OrBranchStart:
+                break;
+            case Sprite.OrBranchEnd:
+                break;
+            case Sprite.DownWire:
+                break;
+            case Sprite.BranchStart:
+                break;
+            case Sprite.BranchEnd:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(element), element, null);
+        }
     }
 
     public void DeleteItem()
@@ -343,6 +402,11 @@ public class InteractiveLdBuilder
     {
         Nothing,
         NoContactProperties
+    }
+
+    public void MoveTo(Point point)
+    {
+        Selected = point;
     }
 }
 
