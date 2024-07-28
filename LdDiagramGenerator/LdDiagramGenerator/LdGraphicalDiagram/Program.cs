@@ -318,37 +318,7 @@ public class InteractiveLdBuilder
             Kind = element,
             Label = label
         };
-
-        switch (element)
-        {
-            case Sprite.Wire:
-            case Sprite.Nc:
-            case Sprite.No:
-                SelectRight();
-                break;
-            case Sprite.CoilSet:
-            case Sprite.CoilReset:
-            case Sprite.Coil:
-                //place next branch start?
-                MoveTo(new Point(1, Selected.Y + 2));
-                break;
-          
-            case Sprite.OrBranch:
-                
-                break;
-            case Sprite.OrBranchStart:
-                break;
-            case Sprite.OrBranchEnd:
-                break;
-            case Sprite.DownWire:
-                break;
-            case Sprite.BranchStart:
-                break;
-            case Sprite.BranchEnd:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(element), element, null);
-        }
+        
     }
 
     public void DeleteItem()
