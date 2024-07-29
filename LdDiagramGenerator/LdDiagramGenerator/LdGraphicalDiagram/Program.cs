@@ -60,7 +60,6 @@ internal static class Program
 
         LineRootNode line0Root = new()
         {
-            Outputs = ["O1"],
             Attached =
             [
                 new Node()
@@ -100,6 +99,13 @@ internal static class Program
         // ---| |---+--------|\|--------( )---
         //   X002   |
         // ---| |---+
+        Node l1Out = new Node()
+        {
+            Kind = Node.NodeKind.Coil,
+            Attached = [],
+            Label = "O0"
+        };
+        
         Node l1X003 = new Node()
         {
             Label = "X003",
@@ -108,21 +114,26 @@ internal static class Program
             [
                 new()
                 {
-                    Attached = [],
+                    Attached = [l1Out],
                     Kind = Node.NodeKind.Nc,
                     Label = "X005"
                 },
                 new()
                 {
-                    Attached = [],
+                    Attached = [l1Out],
                     Kind = Node.NodeKind.No,
                     Label = "X006"
+                },
+                new()
+                {
+                    Attached = [l1Out],
+                    Kind = Node.NodeKind.No,
+                    Label = "X016"
                 }
             ]
         };
         LineRootNode simple = new()
         {
-            Outputs = ["O1"],
             Attached =
             [
                 new Node
@@ -141,7 +152,7 @@ internal static class Program
                 {
                     Kind = Node.NodeKind.No,
                     Label = "X004",
-                    Attached = []
+                    Attached = [l1Out]
                 }
             ]
         };
@@ -264,7 +275,7 @@ internal static class Program
             EndMode2D();
             showGridLines = RayGui.GuiCheckBox(new Rectangle(0, 0, 32, 24), "Show Grid Lines", showGridLines);
 
-
+            DrawText($"{interact.Selected}", 20, 0, 12, YELLOW);
             if (interact.IsPopupOpen) interact.DrawPopup();
 
             rlImGui.End(); // ends the ImGui content mode. Make all ImGui calls before this

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-[DebuggerDisplay("[{GetHashCode()}:{Kind}:{Label}]")]
+[DebuggerDisplay("{GetDebuggerDisplay()}")]
 public class Node
 {
     public Node[] Attached;
@@ -12,12 +12,24 @@ public class Node
     public enum NodeKind
     {
         No,
-        Nc
+        Nc,
+        Coil
     }
+
+    public string GetDebuggerDisplay() => $"[{GetHashCode()}:{Kind}:{Label}]";
 }
 
 public static class Ext
 {
+    public static bool IsOutput(this Node.NodeKind k) => k switch
+    {
+        Node.NodeKind.No => false,
+        Node.NodeKind.Nc => false,
+        Node.NodeKind.Coil => true,
+        _ => throw new ArgumentOutOfRangeException(nameof(k), k, null)
+    };
+    
+    
     public static string LdSymble(this Node.NodeKind kind) => kind switch
     {
         Node.NodeKind.No => "---| |---",

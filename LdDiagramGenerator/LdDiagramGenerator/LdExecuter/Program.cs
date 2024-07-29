@@ -18,19 +18,25 @@ Dictionary<string, bool> io = new()
     { "O1", false }
 };
 
+Node Out = new()
+{
+    Kind = Node.NodeKind.Coil,
+    Label = "O1"
+};
+
 Node L0X2NO = new()
 {
     Attached =
     [
         new Node()
         {
-            Attached = [],
+            Attached = [Out],
             Kind = Node.NodeKind.No,
             Label = "X4"
         }, 
         new Node()
         {
-            Attached = [],
+            Attached = [Out],
             Kind = Node.NodeKind.No,
             Label = "X6"
         }
@@ -41,7 +47,6 @@ Node L0X2NO = new()
 
 LineRootNode Line0Root = new()
 {
-    Outputs = ["O1"],
     Attached =
     [
         new()
@@ -113,6 +118,6 @@ void ExecuteLine(LineRootNode l)
 
     foreach (var os in l.Outputs)
     {
-        io[os] = outputStateToSet;
+        io[os.Label] = outputStateToSet;
     }
 }

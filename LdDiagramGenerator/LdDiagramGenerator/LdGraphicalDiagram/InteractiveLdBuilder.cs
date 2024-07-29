@@ -120,6 +120,7 @@ public class InteractiveLdBuilder
         {
             Node.NodeKind.No => Sprite.No,
             Node.NodeKind.Nc => Sprite.Nc,
+            Node.NodeKind.Coil => Sprite.Coil,
             _ => throw new ArgumentOutOfRangeException()
         }, n.Label, n);
     }
@@ -131,7 +132,7 @@ public class InteractiveLdBuilder
     {
         foreach (var n in currRoot)
         {
-            if (_placed.Contains(n)) continue;
+            if (_placed.Contains(n) || n.Kind.IsOutput()) continue;
             _placed.Add(n);
             Load(n);
             if (!ReferenceEquals(n, currRoot.Last()))
@@ -164,23 +165,86 @@ public class InteractiveLdBuilder
     private KeyValuePair<Point, LdElem> GetElemFromNode(Node n) =>
         LdElems.FirstOrDefault(x => ReferenceEquals(x.Value.Node, n));
 
-    public void Wr(KeyValuePair<Point, LdElem> a, KeyValuePair<Point, LdElem> b)
-    {
-    }
-
     public void Wire(Node[] rAttached)
     {
         foreach (var n in rAttached)
         {
-            var ld = GetElemFromNode(n);
-            Debug.Assert(ld.Value.Node != null);
-            foreach (var a in n.Attached)
+            var elem = GetElemFromNode(n);
+
+            MoveTo(elem.Key);
+            SelectRight();
+
+            var othersBelowMeConnect = OthersBelowMeConnect(elem.Key);
+            var connectToOthersAboveMe = ConnectToOthersAboveMe(elem.Key);
+            Console.WriteLine($"Wire {n.GetDebuggerDisplay()}");
+
+            if (othersBelowMeConnect)
             {
-                var aLd = GetElemFromNode(a);
-                Debug.Assert(aLd.Value.Node != null);
-                Wr(ld, aLd);
+                PlaceItem(Sprite.OrBranch, "");
+                SelectDown();
+                PlaceItem(Sprite.DownWire, "");
+            }
+
+            if (connectToOthersAboveMe)
+            {
+                PlaceItem(Sprite.OrBranchEnd, "");
+            }
+
+            if (n.Attached.Length == 0) continue;
+            Wire(n.Attached);
+        }
+    }
+
+    /// <summary>
+    ///     returns if the node that is visualy above us connects with us
+    /// </summary>
+    private bool ConnectToOthersAboveMe(Point pos)
+    {
+        if (!LdElems.TryGetValue(pos, out var me)) return false;
+        if (me.Node == null) throw new Exception("me.Node == null");
+        var aboveMe = pos with { Y = pos.Y - 2 };
+        if (!LdElems.TryGetValue(aboveMe, out var below)) return false;
+        if (below.Node == null) return false; //this is a wire or something...
+
+        //if the node below me connects to any i connect with, true
+        foreach (var n in below.Node.Attached)
+        {
+            foreach (var meNode in me.Node.Attached)
+            {
+                if (ReferenceEquals(n, meNode))
+                {
+                    return true;
+                }
             }
         }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Returns if the node that is visualy below us needs to connect with this wire
+    /// </summary>
+    private bool OthersBelowMeConnect(Point pos)
+    {
+        if (!LdElems.TryGetValue(pos, out var me)) return false;
+        if (me.Node == null) throw new Exception("me.Node == null");
+        var belowMePt = pos with { Y = pos.Y + 2 };
+        if (!LdElems.TryGetValue(belowMePt, out var below)) return false;
+        if (below.Node == null) return false; //this is a wire or something...
+
+        //if the node below me connects to any i connect with, true
+        foreach (var n in below.Node.Attached)
+        {
+            foreach (var meNode in me.Node.Attached)
+            {
+                if (ReferenceEquals(n, meNode))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public void LoadDiagram(LineRootNode r)
@@ -196,8 +260,8 @@ public class InteractiveLdBuilder
         Selected = start with { X = maxLen };
         foreach (var o in r.Outputs)
         {
-            PlaceItem(Sprite.Coil, o);
-
+            PlaceItem(Sprite.Coil, o.Label);
+        
             SelectDown();
             SelectDown();
         }
@@ -214,13 +278,11 @@ public class InteractiveLdBuilder
 
         //output end line
         Selected = start with { X = start.X + maxLen };
-        for (int i = 0; i < r.Outputs.Length; i++)
-        {
-            PlaceItem(Sprite.BranchEnd, "");
-            SelectDown();
-            PlaceItem(Sprite.DownWire, "");
-            SelectDown();
-        }
+        PlaceItem(Sprite.BranchEnd, "");
+        SelectDown();
+        PlaceItem(Sprite.DownWire, "");
+        SelectDown();
+
 
         return;
     }
