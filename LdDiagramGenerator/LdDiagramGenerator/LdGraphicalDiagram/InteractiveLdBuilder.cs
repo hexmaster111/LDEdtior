@@ -176,18 +176,24 @@ public class InteractiveLdBuilder
 
             var othersBelowMeConnect = OthersBelowMeConnect(elem.Key);
             var connectToOthersAboveMe = ConnectToOthersAboveMe(elem.Key);
+            
             Console.WriteLine($"Wire {n.GetDebuggerDisplay()}");
 
-            if (othersBelowMeConnect)
+            if (othersBelowMeConnect && !connectToOthersAboveMe)
             {
                 PlaceItem(Sprite.OrBranch, "");
                 SelectDown();
                 PlaceItem(Sprite.DownWire, "");
             }
-
-            if (connectToOthersAboveMe)
+            else if (connectToOthersAboveMe && !othersBelowMeConnect)
             {
                 PlaceItem(Sprite.OrBranchEnd, "");
+            }
+            else if (othersBelowMeConnect && connectToOthersAboveMe)
+            {
+                PlaceItem(Sprite.BranchEnd, "");
+                SelectDown();
+                PlaceItem(Sprite.DownWire, "");
             }
 
             if (n.Attached.Length == 0) continue;
@@ -261,7 +267,7 @@ public class InteractiveLdBuilder
         foreach (var o in r.Outputs)
         {
             PlaceItem(Sprite.Coil, o.Label);
-        
+
             SelectDown();
             SelectDown();
         }
