@@ -105,7 +105,7 @@ internal static class Program
             Attached = [],
             Label = "O0"
         };
-        
+
         Node l1X003 = new Node()
         {
             Label = "X003",
@@ -123,12 +123,6 @@ internal static class Program
                     Attached = [l1Out],
                     Kind = Node.NodeKind.No,
                     Label = "X006"
-                },
-                new()
-                {
-                    Attached = [l1Out],
-                    Kind = Node.NodeKind.No,
-                    Label = "X016"
                 }
             ]
         };
@@ -157,6 +151,36 @@ internal static class Program
             ]
         };
 
+
+        LineRootNode easy = new()
+        {
+            Attached =
+            [
+                new Node()
+                {
+                    Label = "1st",
+                    Kind = Node.NodeKind.No,
+                    Attached =
+                    [
+                        new Node()
+                        {
+                            Label = "2nd",
+                            Kind = Node.NodeKind.No,
+                            Attached =
+                            [
+                                new Node()
+                                {
+                                    Label = "3rd",
+                                    Kind = Node.NodeKind.Coil,
+                                    Attached = []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
         SetConfigFlags(ConfigFlags.FLAG_WINDOW_RESIZABLE);
 
 // RL Initialization
@@ -177,12 +201,13 @@ internal static class Program
         bool showGridLines = false;
 
         InteractiveLdBuilder interact = new();
+        //interact.LoadDiagram(easy);
         interact.LoadDiagram(simple);
 
         SetTargetFPS(60);
         SetExitKey(0);
-//HideCursor();
-// Main game loop
+        //HideCursor();
+        // Main game loop
         while (!WindowShouldClose())
         {
             if (interact.IsPopupOpen) goto Draw;

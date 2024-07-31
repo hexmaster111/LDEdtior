@@ -143,7 +143,7 @@ public class InteractiveLdBuilder
         }
 
 
-        if (currRoot.All(x => x == null || x.Attached.Length == 0))
+        if (currRoot.All(x => x.Attached == null || x.Attached.Length == 0))
         {
             //end of diagram
             return;
@@ -165,6 +165,8 @@ public class InteractiveLdBuilder
     private KeyValuePair<Point, LdElem> GetElemFromNode(Node n) =>
         LdElems.FirstOrDefault(x => ReferenceEquals(x.Value.Node, n));
 
+    
+    
     public void Wire(Node[] rAttached)
     {
         foreach (var n in rAttached)
@@ -174,8 +176,9 @@ public class InteractiveLdBuilder
             MoveTo(elem.Key);
             SelectRight();
 
-            var othersBelowMeConnect = OthersBelowMeConnect(elem.Key);
-            var connectToOthersAboveMe = ConnectToOthersAboveMe(elem.Key);
+            var othersBelowMeConnect = OthersFrontBelowMeConnect(elem.Key);
+            var connectToOthersAboveMe = ConnectToOthersFrontAboveMe(elem.Key);
+            var connectToInfront = ConnectToOthersForward(elem.Key);
             
             Console.WriteLine($"Wire {n.GetDebuggerDisplay()}");
 
@@ -194,6 +197,13 @@ public class InteractiveLdBuilder
                 PlaceItem(Sprite.BranchEnd, "");
                 SelectDown();
                 PlaceItem(Sprite.DownWire, "");
+            }else if (connectToInfront)
+            {
+                PlaceItem(Sprite.Wire, "");
+            }
+            else
+            {
+                
             }
 
             if (n.Attached.Length == 0) continue;
@@ -204,7 +214,38 @@ public class InteractiveLdBuilder
     /// <summary>
     ///     returns if the node that is visualy above us connects with us
     /// </summary>
-    private bool ConnectToOthersAboveMe(Point pos)
+    private bool ConnectToOthersForward(Point pos)
+    {
+        if (!LdElems.TryGetValue(pos, out var me)) return false;//throw new Exception($"Nothing here {pos}");
+        if (me.Node == null) throw new Exception("me.Node == null");
+        var forward = pos with { X = pos.X + 2};
+        if (!LdElems.TryGetValue(forward, out var inFront)) return false;
+        if (inFront.Node == null) return false; //this is a wire or something...
+
+        if (me.Node.Attached.Contains(inFront.Node))
+        {
+            //i connect to the one in front of me
+            return true;
+        }
+        
+        // foreach (var n in inFront.Node.Attached)
+        // {
+        //     foreach (var meNode in me.Node.Attached)
+        //     {
+        //         if (ReferenceEquals(n, meNode))
+        //         {
+        //             return true;
+        //         }
+        //     }
+        // }
+
+        return false;
+    }
+    
+    /// <summary>
+    ///     returns if the node that is visualy above us connects with us
+    /// </summary>
+    private bool ConnectToOthersFrontAboveMe(Point pos)
     {
         if (!LdElems.TryGetValue(pos, out var me)) return false;
         if (me.Node == null) throw new Exception("me.Node == null");
@@ -230,7 +271,7 @@ public class InteractiveLdBuilder
     /// <summary>
     ///     Returns if the node that is visualy below us needs to connect with this wire
     /// </summary>
-    private bool OthersBelowMeConnect(Point pos)
+    private bool OthersFrontBelowMeConnect(Point pos)
     {
         if (!LdElems.TryGetValue(pos, out var me)) return false;
         if (me.Node == null) throw new Exception("me.Node == null");
