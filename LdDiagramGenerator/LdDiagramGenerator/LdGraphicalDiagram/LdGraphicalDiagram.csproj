@@ -9,9 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Raylib-cs" Version="6.1.1" />
       <PackageReference Include="Raylib-CsLo" Version="4.2.0.9" />
-      <PackageReference Include="Raylib_ImGui" Version="1.0.2" />
-      <PackageReference Include="rlImgui-cs" Version="2.0.3" />
     </ItemGroup>
 
     <ItemGroup>

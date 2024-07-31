@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
-using ImGuiNET;
 using Raylib_CsLo;
 
 namespace LdGraphicalDiagram;
@@ -24,26 +23,26 @@ public class InteractiveLdBuilder
 
     private void DrawContactProperties()
     {
-        ImGui.Begin("Contact");
-        {
-            var tmp = Encoding.ASCII.GetBytes(LdElems[Selected].Label).Concat(new byte[1]).ToArray();
-
-            if (ImGui.InputText("Label", tmp, (uint)tmp.Length))
-            {
-                LdElems[Selected] = LdElems[Selected] with
-                {
-                    Label = Encoding.ASCII.GetString(tmp)
-                };
-            }
-
-            if (ImGui.Button("Close") ||
-                Raylib.IsKeyDown(KeyboardKey.KEY_ESCAPE) ||
-                Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER))
-            {
-                _openPopup = PopupKind.Nothing;
-            }
-        }
-        ImGui.End();
+        // ImGui.Begin("Contact");
+        // {
+        //     var tmp = Encoding.ASCII.GetBytes(LdElems[Selected].Label).Concat(new byte[1]).ToArray();
+        //
+        //     if (ImGui.InputText("Label", tmp, (uint)tmp.Length))
+        //     {
+        //         LdElems[Selected] = LdElems[Selected] with
+        //         {
+        //             Label = Encoding.ASCII.GetString(tmp)
+        //         };
+        //     }
+        //
+        //     if (ImGui.Button("Close") ||
+        //         Raylib.IsKeyDown(KeyboardKey.KEY_ESCAPE) ||
+        //         Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER))
+        //     {
+        //         _openPopup = PopupKind.Nothing;
+        //     }
+        // }
+        // ImGui.End();
     }
 
     public void DrawPopup()

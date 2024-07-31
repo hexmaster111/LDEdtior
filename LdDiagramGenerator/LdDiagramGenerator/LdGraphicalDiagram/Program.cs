@@ -1,7 +1,6 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using Raylib_CsLo;
-using rlImGui_cs;
 using static Raylib_CsLo.Raylib;
 using static Raylib_CsLo.RlGl;
 using Rectangle = Raylib_CsLo.Rectangle;
@@ -189,8 +188,7 @@ internal static class Program
         const int screenHeight = 450;
 
         InitWindow(screenWidth, screenHeight, "LD");
-        rlImGui.Setup(true); // sets up ImGui with ether a dark or light default theme
-
+        
 
         Camera2D camera = new();
         camera.zoom = 1.0f;
@@ -267,7 +265,6 @@ internal static class Program
             //----------------------------------------------------------------------------------
             Draw:
             BeginDrawing();
-            rlImGui.Begin(); // starts the ImGui content mode. Make all ImGui calls after this
             ClearBackground(BLACK);
             BeginMode2D(camera);
 
@@ -303,12 +300,10 @@ internal static class Program
             DrawText($"{interact.Selected}", 20, 0, 12, YELLOW);
             if (interact.IsPopupOpen) interact.DrawPopup();
 
-            rlImGui.End(); // ends the ImGui content mode. Make all ImGui calls before this
             EndDrawing();
             //----------------------------------------------------------------------------------
         }
 
-        rlImGui.Shutdown(); // cleans up ImGui
 
 // De-Initialization
 //--------------------------------------------------------------------------------------
