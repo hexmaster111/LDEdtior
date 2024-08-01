@@ -39,7 +39,7 @@ public class InteractiveLdBuilder
         //         Raylib.IsKeyDown(KeyboardKey.KEY_ESCAPE) ||
         //         Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER))
         //     {
-        //         _openPopup = PopupKind.Nothing;
+        _openPopup = PopupKind.Nothing; //disable this when im done with the other ui.
         //     }
         // }
         // ImGui.End();
@@ -164,8 +164,92 @@ public class InteractiveLdBuilder
     private KeyValuePair<Point, LdElem> GetElemFromNode(Node n) =>
         LdElems.FirstOrDefault(x => ReferenceEquals(x.Value.Node, n));
 
-    
-    
+    private static bool IsConnectedTo(Node node, Node other) =>
+        node.Attached.Contains(other);
+
+
+    private
+        (bool up, int upCt, bool down, int downCt, bool forward, int forwardCt, bool forwardDown, int fwd)
+        WhereConnect(KeyValuePair<Point, LdElem> elem)
+    {
+        //basily hit test to the direction, if we find something, check if we 
+        //are supposed to connect to it
+
+        var pt = elem.Key;
+        var ld = elem.Value;
+
+        bool up = false, down = false, forward = false, fwdDn = false;
+        int u = 0, d = 0, f = 0, fwd = 0;
+
+        if (ld.Node == null) return (up, u, down, d, forward, f, fwdDn, fwd);
+
+
+        for (int i = 0; i < 10 /*arbitrary*/; i++)
+        {
+            var pos = pt with { X = i + pt.X };
+            if (pt.Equals(pos)) continue;
+            if (LdElems.TryGetValue(pos, out var fwdElem))
+            {
+                if (IsConnectedTo(ld.Node, fwdElem.Node))
+                {
+                    forward = true;
+                    f = i - 1;
+                }
+            }
+
+            pos = pt with { Y = i + pt.Y };
+            if (LdElems.TryGetValue(pos, out var downElem))
+            {
+                if (downElem.Node != null)
+                {
+                    foreach (var downElemAttached in downElem.Node.Attached)
+                    {
+                        foreach (var ldAttached in ld.Node.Attached)
+                        {
+                            if (ReferenceEquals(downElemAttached, ldAttached))
+                            {
+                                down = true;
+                                d = i - 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            pos = pt with { Y = pt.Y - i };
+            if (LdElems.TryGetValue(pos, out var upElem))
+            {
+                foreach (var upAttached in upElem.Node.Attached)
+                {
+                    foreach (var ldAttached in ld.Node.Attached)
+                    {
+                        if (ReferenceEquals(upAttached, ldAttached))
+                        {
+                            up = true;
+                            u = i - 1;
+                        }
+                    }
+                }
+            }
+
+            pos = pt with
+            {
+                Y = pt.Y + i,
+                X = pt.X + i
+            };
+            if (LdElems.TryGetValue(pos, out var fwdDnElem))
+            {
+                if (IsConnectedTo(ld.Node, fwdDnElem.Node))
+                {
+                    fwdDn = true;
+                    fwd = i - 1;
+                }
+            }
+        }
+
+        return (up, u, down, d, forward, f, fwdDn, fwd);
+    }
+
     public void Wire(Node[] rAttached)
     {
         foreach (var n in rAttached)
@@ -175,35 +259,96 @@ public class InteractiveLdBuilder
             MoveTo(elem.Key);
             SelectRight();
 
-            var othersBelowMeConnect = OthersFrontBelowMeConnect(elem.Key);
-            var connectToOthersAboveMe = ConnectToOthersFrontAboveMe(elem.Key);
-            var connectToInfront = ConnectToOthersForward(elem.Key);
-            
             Console.WriteLine($"Wire {n.GetDebuggerDisplay()}");
+            var (up, upCt, down, downCt, forward, forwardCt, fwdDown, fw) = WhereConnect(elem);
 
-            if (othersBelowMeConnect && !connectToOthersAboveMe)
+
+            if (!up && !down && forward && !fwdDown)
+            {
+                for (int i = 0; i < forwardCt; i++)
+                {
+                    PlaceItem(Sprite.Wire, "");
+                    SelectRight();
+                }
+            }
+
+            if (!up && !down && forward && fwdDown)
+            {
+                PlaceItem(Sprite.OrBranch, "");
+            }
+
+            if (!up && down && forward)
             {
                 PlaceItem(Sprite.OrBranch, "");
                 SelectDown();
-                PlaceItem(Sprite.DownWire, "");
+
+                for (int i = 0; i < forwardCt; i++)
+                {
+                    PlaceItem(Sprite.DownWire, "");
+                    SelectRight();
+                }
             }
-            else if (connectToOthersAboveMe && !othersBelowMeConnect)
+
+            if (up && !down && !forward)
             {
                 PlaceItem(Sprite.OrBranchEnd, "");
-            }
-            else if (othersBelowMeConnect && connectToOthersAboveMe)
-            {
-                PlaceItem(Sprite.BranchEnd, "");
-                SelectDown();
+                SelectUp();
                 PlaceItem(Sprite.DownWire, "");
-            }else if (connectToInfront)
-            {
-                PlaceItem(Sprite.Wire, "");
             }
-            else
+
+            if (down && forward && !up && !fwdDown)
             {
-                
+                var pt = Selected;
+                PlaceItem(Sprite.OrBranch, "");
             }
+
+            //
+            // switch (up, down, forward)
+            // {
+            //     case (false, false, true):
+            //
+            //
+            //         break;
+            //
+            //     case (true, false, false):
+            //         PlaceItem(Sprite.BranchEnd, "");
+            //         SelectUp();
+            //         for (int i = 0; i < upCt; i++)
+            //         {
+            //             PlaceItem(Sprite.DownWire, "");
+            //             SelectUp();
+            //         }
+            //
+            //         break;
+            //     default:
+            //         break;
+            // }
+
+            // var othersBelowMeConnect = OthersFrontBelowMeConnect(elem.Key);
+            // var connectToOthersAboveMe = ConnectToOthersFrontAboveMe(elem.Key);
+            // var connectToInfront = ConnectToOthersForward(elem.Key);
+
+            // if (othersBelowMeConnect && !connectToOthersAboveMe)
+            // {
+            //     PlaceItem(Sprite.OrBranch, "");
+            //     SelectDown();
+            //     PlaceItem(Sprite.DownWire, "");
+            // }
+            // else if (connectToOthersAboveMe && !othersBelowMeConnect)
+            // {
+            //     PlaceItem(Sprite.OrBranchEnd, "");
+            // }
+            // else if (othersBelowMeConnect && connectToOthersAboveMe)
+            // {
+            //     PlaceItem(Sprite.BranchEnd, "");
+            //     SelectDown();
+            //     PlaceItem(Sprite.DownWire, "");
+            // }
+            // else if (connectToInfront)
+            // {
+            //     PlaceItem(Sprite.Wire, "");
+            // }
+
 
             if (n.Attached.Length == 0) continue;
             Wire(n.Attached);
@@ -215,9 +360,9 @@ public class InteractiveLdBuilder
     /// </summary>
     private bool ConnectToOthersForward(Point pos)
     {
-        if (!LdElems.TryGetValue(pos, out var me)) return false;//throw new Exception($"Nothing here {pos}");
+        if (!LdElems.TryGetValue(pos, out var me)) return false; //throw new Exception($"Nothing here {pos}");
         if (me.Node == null) throw new Exception("me.Node == null");
-        var forward = pos with { X = pos.X + 2};
+        var forward = pos with { X = pos.X + 2 };
         if (!LdElems.TryGetValue(forward, out var inFront)) return false;
         if (inFront.Node == null) return false; //this is a wire or something...
 
@@ -226,7 +371,7 @@ public class InteractiveLdBuilder
             //i connect to the one in front of me
             return true;
         }
-        
+
         // foreach (var n in inFront.Node.Attached)
         // {
         //     foreach (var meNode in me.Node.Attached)
@@ -240,7 +385,7 @@ public class InteractiveLdBuilder
 
         return false;
     }
-    
+
     /// <summary>
     ///     returns if the node that is visualy above us connects with us
     /// </summary>
