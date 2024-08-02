@@ -188,7 +188,7 @@ internal static class Program
         const int screenHeight = 450;
 
         InitWindow(screenWidth, screenHeight, "LD");
-        
+
 
         Camera2D camera = new();
         camera.zoom = 1.0f;
@@ -293,6 +293,12 @@ internal static class Program
             }
 
 
+            foreach (var wire in interact.Wires)
+            {
+                DrawLdWireOnGrid(wire);
+            }
+
+
             SetMouseOffset(0, 0);
             EndMode2D();
             showGridLines = RayGui.GuiCheckBox(new Rectangle(0, 0, 32, 24), "Show Grid Lines", showGridLines);
@@ -311,6 +317,25 @@ internal static class Program
 //--------------------------------------------------------------------------------------
 
         return 0;
+    }
+
+    private static void DrawLdWireOnGrid(InteractiveLdBuilder.WireT wire)
+    {
+        for (int i = 0; i < wire.Points.Length - 1; i++)
+        {
+            var currentPt = wire.Points[i];
+            var nextPt = wire.Points[i + 1];
+            DrawWire(currentPt, nextPt);
+        }
+    }
+
+    private static void DrawWire(Vector2 gridPoint1, Vector2 gridPoint2)
+    {
+        const int wireThickness = InteractiveLdBuilder.WireT.Thickness;
+        Vector2 screenPos1 = new() { X = gridPoint1.X * GridWidthPx, Y = gridPoint1.Y * GridHeightPx };
+        Vector2 screenPos2 = new() { X = gridPoint2.X * GridWidthPx, Y = gridPoint2.Y * GridHeightPx };
+
+        DrawLineEx(screenPos1, screenPos2, wireThickness, YELLOW);
     }
 
     private static void DrawLdSpriteOnGrid(int row, int col, string lbl, Sprite spriteidx)
