@@ -14,86 +14,6 @@ internal static class Program
 
     public static int Main(string[] args)
     {
-        Node l0X7No = new()
-        {
-            Attached =
-            [
-                new Node()
-                {
-                    Attached = [],
-                    Kind = Node.NodeKind.No,
-                    Label = "X8"
-                },
-                new Node()
-                {
-                    Attached =
-                        [],
-                    Kind = Node.NodeKind.Nc,
-                    Label = "X9"
-                }
-            ],
-            Label = "X7",
-            Kind = Node.NodeKind.No
-        };
-
-        Node l0X2No = new()
-        {
-            Attached =
-            [
-                new Node()
-                {
-                    Attached = [l0X7No],
-                    Kind = Node.NodeKind.No,
-                    Label = "X4"
-                },
-                new Node()
-                {
-                    Attached = [l0X7No],
-                    Kind = Node.NodeKind.Nc,
-                    Label = "X6"
-                }
-            ],
-            Label = "X2",
-            Kind = Node.NodeKind.No
-        };
-
-        LineRootNode line0Root = new()
-        {
-            Attached =
-            [
-                new Node()
-                {
-                    Attached = [l0X2No],
-                    Kind = Node.NodeKind.No,
-                    Label = "X1"
-                },
-                new Node()
-                {
-                    Attached = [l0X2No],
-                    Kind = Node.NodeKind.No,
-                    Label = "X3"
-                },
-                new Node()
-                {
-                    Attached = [l0X2No],
-                    Kind = Node.NodeKind.No,
-                    Label = "X5"
-                },
-                new Node()
-                {
-                    Attached = [],
-                    Kind = Node.NodeKind.No,
-                    Label = "X10"
-                },
-                new Node()
-                {
-                    Attached = [l0X7No],
-                    Kind = Node.NodeKind.No,
-                    Label = "X11"
-                },
-            ]
-        };
-
         Node l1Out = new Node()
         {
             Kind = Node.NodeKind.Coil,
@@ -197,7 +117,6 @@ internal static class Program
         InteractiveLdBuilder interact = new();
         //interact.LoadDiagram(easy);
         interact.LoadDiagram(simple);
-        //interact.LoadDiagram(line0Root);
 
         SetTargetFPS(60);
         SetExitKey(0);
@@ -243,18 +162,7 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_NINE)) interact.PlaceItem(Sprite.OrBranchStart, "");
             if (IsKeyPressed(KeyboardKey.KEY_ZERO)) interact.PlaceItem(Sprite.BranchEnd, "");
 
-            bool ToolBarButton(int buttonLoc, string label) =>
-                RayGui.GuiButton(new Rectangle(128 * buttonLoc, 0, 128, 32), label);
-
-            void DrawLast()
-            {
-                ToolBarButton(0, @"-------");
-                ToolBarButton(1, @"--| |--");
-                ToolBarButton(2, @"--|\|--");
-                ToolBarButton(3, @"--( )--");
-                ToolBarButton(4, @"BRANCH");
-                ToolBarButton(5, @"END BR");
-            }
+           
 
         //----------------------------------------------------------------------------------
 
@@ -281,8 +189,8 @@ internal static class Program
             var mp = GetMousePosition();
             //DrawCircle((int)mp.X, (int)mp.Y, 5, RED);
             //GuiDrawIcon((int)GuiIconName.ICON_CURSOR_HAND, (int)mp.X, (int)mp.Y, 1, WHITE);
-            DrawPointerOnGrid(interact.Selected);
 
+            DrawPointerOnGrid(interact.Selected);
 
             foreach (var wire in interact.Wires)
             {
@@ -294,9 +202,6 @@ internal static class Program
             {
                 DrawLdSpriteOnGrid(e.Key.Y, e.Key.X, e.Value.Label, e.Value.Kind);
             }
-
-
-
 
             SetMouseOffset(0, 0);
             EndMode2D();
@@ -362,7 +267,7 @@ internal static class Program
 
         var scLocation = new Rectangle((int)spriteIdx * 64 + (SpritePaddingPx * (int)spriteIdx), 0, 64, 64);
         var destLocation = new Rectangle(tlPx, tlPy, 64, 64);
-        DrawRectangleRec(destLocation, BLACK);
+        //DrawRectangleRec(destLocation, BLACK);
         DrawTexturePro(_sprites, scLocation, destLocation, new(0, 0), 0, YELLOW);
     }
 
