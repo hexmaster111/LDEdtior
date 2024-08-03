@@ -216,8 +216,8 @@ public class InteractiveLdBuilder
             Points =
             [
                 ToVect(currentElem.Key),
-                new(nextElem.Key.X / 2.0f, currentElem.Key.Y),
-                new(nextElem.Key.X / 2.0f, nextElem.Key.Y),
+                new(nextElem.Key.X - .5f , currentElem.Key.Y),
+                new(nextElem.Key.X - .5f, nextElem.Key.Y),
                 ToVect(nextElem.Key)
             ]
         });

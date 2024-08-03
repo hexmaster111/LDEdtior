@@ -94,10 +94,6 @@ internal static class Program
             ]
         };
 
-        //   X001           X003       O1
-        // ---| |---+--------|\|--------( )---
-        //   X002   |
-        // ---| |---+
         Node l1Out = new Node()
         {
             Kind = Node.NodeKind.Coil,
@@ -182,8 +178,8 @@ internal static class Program
 
         SetConfigFlags(ConfigFlags.FLAG_WINDOW_RESIZABLE);
 
-// RL Initialization
-//--------------------------------------------------------------------------------------
+        // RL Initialization
+        //--------------------------------------------------------------------------------------
         const int screenWidth = 800;
         const int screenHeight = 450;
 
@@ -201,6 +197,7 @@ internal static class Program
         InteractiveLdBuilder interact = new();
         //interact.LoadDiagram(easy);
         interact.LoadDiagram(simple);
+        //interact.LoadDiagram(line0Root);
 
         SetTargetFPS(60);
         SetExitKey(0);
@@ -259,11 +256,11 @@ internal static class Program
                 ToolBarButton(5, @"END BR");
             }
 
-            //----------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------
 
-            // Draw
-            //----------------------------------------------------------------------------------
-            Draw:
+        // Draw
+        //----------------------------------------------------------------------------------
+        Draw:
             BeginDrawing();
             ClearBackground(BLACK);
             BeginMode2D(camera);
@@ -287,16 +284,18 @@ internal static class Program
             DrawPointerOnGrid(interact.Selected);
 
 
+            foreach (var wire in interact.Wires)
+            {
+                DrawLdWireOnGrid(wire);
+            }
+
+
             foreach (var e in interact.LdElems)
             {
                 DrawLdSpriteOnGrid(e.Key.Y, e.Key.X, e.Value.Label, e.Value.Kind);
             }
 
 
-            foreach (var wire in interact.Wires)
-            {
-                DrawLdWireOnGrid(wire);
-            }
 
 
             SetMouseOffset(0, 0);
@@ -311,10 +310,10 @@ internal static class Program
         }
 
 
-// De-Initialization
-//--------------------------------------------------------------------------------------
+        // De-Initialization
+        //--------------------------------------------------------------------------------------
         CloseWindow(); // Close window and OpenGL context
-//--------------------------------------------------------------------------------------
+                       //--------------------------------------------------------------------------------------
 
         return 0;
     }
@@ -334,6 +333,9 @@ internal static class Program
         const int wireThickness = InteractiveLdBuilder.WireT.Thickness;
         Vector2 screenPos1 = new() { X = gridPoint1.X * GridWidthPx, Y = gridPoint1.Y * GridHeightPx };
         Vector2 screenPos2 = new() { X = gridPoint2.X * GridWidthPx, Y = gridPoint2.Y * GridHeightPx };
+
+        screenPos1.Y += .5f * GridHeightPx;
+        screenPos2.Y += .5f * GridHeightPx;
 
         DrawLineEx(screenPos1, screenPos2, wireThickness, YELLOW);
     }
@@ -360,6 +362,7 @@ internal static class Program
 
         var scLocation = new Rectangle((int)spriteIdx * 64 + (SpritePaddingPx * (int)spriteIdx), 0, 64, 64);
         var destLocation = new Rectangle(tlPx, tlPy, 64, 64);
+        DrawRectangleRec(destLocation, BLACK);
         DrawTexturePro(_sprites, scLocation, destLocation, new(0, 0), 0, YELLOW);
     }
 
