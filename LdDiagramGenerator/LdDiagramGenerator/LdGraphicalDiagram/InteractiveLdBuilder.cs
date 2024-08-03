@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
 using System.Text;
+using LdLib;
 using Raylib_CsLo;
 
 namespace LdGraphicalDiagram;

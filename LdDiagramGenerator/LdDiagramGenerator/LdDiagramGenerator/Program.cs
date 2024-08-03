@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using LdLib;
 
 const int elemWidth = 9;
 const int elemHeight = 2;

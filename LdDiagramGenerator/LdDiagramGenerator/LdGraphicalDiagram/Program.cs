@@ -1,5 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
+using LdLib;
+using Newtonsoft.Json;
 using Raylib_CsLo;
 using static Raylib_CsLo.Raylib;
 using static Raylib_CsLo.RlGl;
@@ -41,60 +43,51 @@ internal static class Program
                 }
             ]
         };
-        LineRootNode simple = new()
-        {
-            Attached =
-            [
-                new Node
-                {
-                    Attached = [l1X003],
-                    Kind = Node.NodeKind.No,
-                    Label = "X001"
-                },
-                new Node()
-                {
-                    Attached = [l1X003],
-                    Kind = Node.NodeKind.No,
-                    Label = "X002"
-                },
-                new Node()
-                {
-                    Kind = Node.NodeKind.No,
-                    Label = "X004",
-                    Attached = [l1Out]
-                }
-            ]
-        };
+        LineRootNode simple = new([
+            new Node
+            {
+                Attached = [l1X003],
+                Kind = Node.NodeKind.No,
+                Label = "X001"
+            },
+            new Node()
+            {
+                Attached = [l1X003],
+                Kind = Node.NodeKind.No,
+                Label = "X002"
+            },
+            new Node()
+            {
+                Kind = Node.NodeKind.No,
+                Label = "X004",
+                Attached = [l1Out]
+            }
+        ]);
 
-
-        LineRootNode easy = new()
-        {
-            Attached =
-            [
-                new Node()
-                {
-                    Label = "1st",
-                    Kind = Node.NodeKind.No,
-                    Attached =
-                    [
-                        new Node()
-                        {
-                            Label = "2nd",
-                            Kind = Node.NodeKind.No,
-                            Attached =
-                            [
-                                new Node()
-                                {
-                                    Label = "3rd",
-                                    Kind = Node.NodeKind.Coil,
-                                    Attached = []
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        };
+        LineRootNode easy = new([
+            new Node()
+            {
+                Label = "1st",
+                Kind = Node.NodeKind.No,
+                Attached =
+                [
+                    new Node()
+                    {
+                        Label = "2nd",
+                        Kind = Node.NodeKind.No,
+                        Attached =
+                        [
+                            new Node()
+                            {
+                                Label = "3rd",
+                                Kind = Node.NodeKind.Coil,
+                                Attached = []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]);
 
         SetConfigFlags(ConfigFlags.FLAG_WINDOW_RESIZABLE);
 
@@ -207,6 +200,11 @@ internal static class Program
             EndMode2D();
             showGridLines = RayGui.GuiCheckBox(new Rectangle(0, 0, 32, 24), "Show Grid Lines", showGridLines);
 
+            if (RayGui.GuiButton(new Rectangle(0, 25, 32, 24), "Save"))
+            {
+                var s =simple.SaveString();
+            }
+            
             DrawText($"{interact.Selected}", 20, 0, 12, YELLOW);
             if (interact.IsPopupOpen) interact.DrawPopup();
 

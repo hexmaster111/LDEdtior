@@ -7,6 +7,8 @@
  *
  */
 
+using LdLib;
+
 Dictionary<string, bool> io = new()
 {
     { "X1", false },
@@ -45,30 +47,26 @@ Node L0X2NO = new()
     Kind = Node.NodeKind.No
 };
 
-LineRootNode Line0Root = new()
-{
-    Attached =
-    [
-        new()
-        {
-            Attached = [L0X2NO],
-            Kind = Node.NodeKind.No,
-            Label = "X1"
-        },
-        new()
-        {
-            Attached = [L0X2NO],
-            Kind = Node.NodeKind.No,
-            Label = "X3"
-        },
-        new()
-        {
-            Attached = [L0X2NO],
-            Kind = Node.NodeKind.No,
-            Label = "X5"
-        }
-    ]
-};
+LineRootNode Line0Root = new([
+    new()
+    {
+        Attached = [L0X2NO],
+        Kind = Node.NodeKind.No,
+        Label = "X1"
+    },
+    new()
+    {
+        Attached = [L0X2NO],
+        Kind = Node.NodeKind.No,
+        Label = "X3"
+    },
+    new()
+    {
+        Attached = [L0X2NO],
+        Kind = Node.NodeKind.No,
+        Label = "X5"
+    }
+]);
 
 ExecuteLine(Line0Root);
 
