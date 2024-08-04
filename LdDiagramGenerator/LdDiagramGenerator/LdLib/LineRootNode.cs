@@ -7,6 +7,51 @@ public class LdDocument(LineRootNode[] lines)
     public LineRootNode[] Lines = lines;
 }
 
+// ---------------- save load --------------------------
+
+#region Save Load Types
+
+[JsonObject(MemberSerialization.OptIn)]
+public class SaveNode
+{
+    [JsonProperty] public int NodeId;
+    [JsonProperty] public int[] Attached = [];
+    [JsonProperty] public string Label;
+    [JsonProperty] public Node.NodeKind Kind;
+
+    [JsonConstructor]
+    public SaveNode(int nodeId, int[] attached, string label, Node.NodeKind kind)
+    {
+        NodeId = nodeId;
+        Attached = attached;
+        Label = label;
+        Kind = kind;
+    }
+
+
+    public SaveNode(int nodeId, Node.NodeKind kind, string label)
+    {
+        NodeId = nodeId;
+        Kind = kind;
+        Label = label;
+    }
+}
+
+[JsonObject(MemberSerialization.OptIn)]
+public class LineRootNodeSaveObject
+{
+    [JsonProperty] public SaveNode[] Nodes;
+    [JsonProperty] public int[] RootNodes;
+
+    public LineRootNodeSaveObject(SaveNode[] nodes, int[] rootNodes)
+    {
+        Nodes = nodes;
+        RootNodes = rootNodes;
+    }
+}
+
+#endregion
+
 public class LineRootNode(Node[] attached)
 {
     public Node[] Attached = attached;
@@ -36,52 +81,6 @@ public class LineRootNode(Node[] attached)
     }
 
 
-    // ---------------- save load --------------------------
-
-    #region Save Load Types
-
-    [JsonObject(MemberSerialization.OptIn)]
-    public class SaveNode
-    {
-        [JsonProperty] public int NodeId;
-        [JsonProperty] public int[] Attached = [];
-        [JsonProperty] public string Label;
-        [JsonProperty] public Node.NodeKind Kind;
-
-        [JsonConstructor]
-        public SaveNode(int nodeId, int[] attached, string label, Node.NodeKind kind)
-        {
-            NodeId = nodeId;
-            Attached = attached;
-            Label = label;
-            Kind = kind;
-        }
-
-
-        public SaveNode(int nodeId, Node.NodeKind kind, string label)
-        {
-            NodeId = nodeId;
-            Kind = kind;
-            Label = label;
-        }
-    }
-
-    [JsonObject(MemberSerialization.OptIn)]
-    private class SaveObject
-    {
-        [JsonProperty] public SaveNode[] Nodes;
-        [JsonProperty] public int[] RootNodes;
-
-        public SaveObject(SaveNode[] nodes, int[] rootNodes)
-        {
-            Nodes = nodes;
-            RootNodes = rootNodes;
-        }
-    }
-
-    #endregion
-
-
     public string SaveString()
     {
         int idAccm = 0;
@@ -106,7 +105,7 @@ public class LineRootNode(Node[] attached)
         }
 
 
-        var saveObj = new SaveObject(nodes, rootIds.ToArray());
+        var saveObj = new LineRootNodeSaveObject(nodes, rootIds.ToArray());
         return JsonConvert.SerializeObject(saveObj, Formatting.Indented);
 
         int[] GetAttachedNodeIds(Node[] attached)
@@ -145,7 +144,7 @@ public class LineRootNode(Node[] attached)
 
     public static LineRootNode Load(string saveString)
     {
-        SaveObject? so = JsonConvert.DeserializeObject<SaveObject>(saveString);
+        LineRootNodeSaveObject? so = JsonConvert.DeserializeObject<LineRootNodeSaveObject>(saveString);
         if (so == null) return null;
 
         List<(Node Node, SaveNode Save)> nodes = so.Nodes.Select(sn => new ValueTuple<Node, SaveNode>(new Node()
