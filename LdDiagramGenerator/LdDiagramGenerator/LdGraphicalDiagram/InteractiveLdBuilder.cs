@@ -13,7 +13,7 @@ public class InteractiveLdBuilder
     public bool IsPopupOpen => _openPopup != PopupKind.Nothing;
 
     public readonly Dictionary<Point, LdElem> LdElems = new();
-    public List<WireT> Wires = new();
+    public readonly List<WireT> Wires = new();
 
     private PopupKind _openPopup = PopupKind.Nothing;
 
@@ -217,7 +217,7 @@ public class InteractiveLdBuilder
             Points =
             [
                 ToVect(currentElem.Key),
-                new(nextElem.Key.X - .5f , currentElem.Key.Y),
+                new(nextElem.Key.X - .5f, currentElem.Key.Y),
                 new(nextElem.Key.X - .5f, nextElem.Key.Y),
                 ToVect(nextElem.Key)
             ]
@@ -229,8 +229,9 @@ public class InteractiveLdBuilder
     {
         const int maxLen = 9;
         LdElems.Clear();
-        var start = Selected = new(1, 1);
-        _placed = new();
+        Wires.Clear();
+        _placed.Clear();
+        var start = Selected = new Point(1, 1);
         Ld(r.Attached);
 
         //Outputs

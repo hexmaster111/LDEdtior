@@ -33,18 +33,48 @@ public class LineRootNode(Node[] attached)
 
     // ---------------- save load --------------------------
 
-    [JsonObject]
+    #region Save Load Types
+
+    [JsonObject(MemberSerialization.OptIn)]
     public class SaveNode
     {
-        public int NodeId;
-        public int[] Attached;
+        [JsonProperty] public int NodeId;
+        [JsonProperty] public int[] Attached = [];
+        [JsonProperty] public string Label;
+        [JsonProperty] public Node.NodeKind Kind;
+
+        [JsonConstructor]
+        public SaveNode(int nodeId, int[] attached, string label, Node.NodeKind kind)
+        {
+            NodeId = nodeId;
+            Attached = attached;
+            Label = label;
+            Kind = kind;
+        }
+
+
+        public SaveNode(int nodeId, Node.NodeKind kind, string label)
+        {
+            NodeId = nodeId;
+            Kind = kind;
+            Label = label;
+        }
     }
 
-    [JsonObject]
+    [JsonObject(MemberSerialization.OptIn)]
     private class SaveObject
     {
-        public SaveNode[] Nodes;
+        [JsonProperty] public SaveNode[] Nodes;
+        [JsonProperty] public int[] RootNodes;
+
+        public SaveObject(SaveNode[] nodes, int[] rootNodes)
+        {
+            Nodes = nodes;
+            RootNodes = rootNodes;
+        }
     }
+
+    #endregion
 
 
     public string SaveString()
@@ -54,25 +84,29 @@ public class LineRootNode(Node[] attached)
             new
             {
                 RefNode = x,
-                SaveNode = new SaveNode { NodeId = idAccm++ }
+                SaveNode = new SaveNode(idAccm++, x.Kind, x.Label)
             }
         ).ToArray();
 
         foreach (var n in allDistinctNodes)
-        {
             n.SaveNode.Attached = GetAttachedNodeIds(n.RefNode.Attached);
+
+        var nodes = allDistinctNodes.Select(x => x.SaveNode).ToArray();
+
+        List<int> rootIds = new();
+        foreach (var rn in Attached)
+        {
+            var renode = allDistinctNodes.First(x => ReferenceEquals(x.RefNode, rn));
+            rootIds.Add(renode.SaveNode.NodeId);
         }
 
-        var saveObj = new SaveObject()
-        {
-            Nodes = allDistinctNodes.Select(x => x.SaveNode).ToArray()
-        };
 
+        var saveObj = new SaveObject(nodes, rootIds.ToArray());
         return JsonConvert.SerializeObject(saveObj, Formatting.Indented);
 
         int[] GetAttachedNodeIds(Node[] attached)
         {
-            List<int> ret = new();
+            List<int> ret = [];
             foreach (var at in attached)
             {
                 foreach (var n in allDistinctNodes)
@@ -92,8 +126,8 @@ public class LineRootNode(Node[] attached)
     {
         foreach (var n in nodes)
         {
-            visitingFunc(n);
             VisitAllNodes(visitingFunc, n.Attached);
+            visitingFunc(n);
         }
     }
 
@@ -106,6 +140,29 @@ public class LineRootNode(Node[] attached)
 
     public static LineRootNode Load(string saveString)
     {
-        return null;
+        SaveObject? so = JsonConvert.DeserializeObject<SaveObject>(saveString);
+        if (so == null) return null;
+
+        List<(Node Node, SaveNode Save)> nodes = so.Nodes.Select(sn => new ValueTuple<Node, SaveNode>(new Node()
+        {
+            Kind = sn.Kind,
+            Label = sn.Label,
+            Attached = new Node[sn.Attached.Length]
+        }, sn)).ToList();
+        var nd = nodes.ToDictionary(x => x.Save.NodeId);
+
+        foreach (var tn in nodes)
+        {
+            for (var i = 0; i < tn.Node.Attached.Length; i++)
+            {
+                tn.Node.Attached[i] = nd[tn.Save.Attached[i]].Node;
+            }
+        }
+
+        var n = nodes
+            .Where(x => so.RootNodes.Contains(x.Save.NodeId))
+            .Select(x => x.Node)
+            .ToArray();
+        return new LineRootNode(n);
     }
 }

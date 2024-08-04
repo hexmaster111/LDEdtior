@@ -155,13 +155,12 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_NINE)) interact.PlaceItem(Sprite.OrBranchStart, "");
             if (IsKeyPressed(KeyboardKey.KEY_ZERO)) interact.PlaceItem(Sprite.BranchEnd, "");
 
-           
 
-        //----------------------------------------------------------------------------------
+            //----------------------------------------------------------------------------------
 
-        // Draw
-        //----------------------------------------------------------------------------------
-        Draw:
+            // Draw
+            //----------------------------------------------------------------------------------
+            Draw:
             BeginDrawing();
             ClearBackground(BLACK);
             BeginMode2D(camera);
@@ -202,9 +201,16 @@ internal static class Program
 
             if (RayGui.GuiButton(new Rectangle(0, 25, 32, 24), "Save"))
             {
-                var s =simple.SaveString();
+                var s = simple.SaveString();
             }
-            
+
+            if (RayGui.GuiButton(new Rectangle(0, 25 + 25, 32, 24), "Load"))
+            {
+                var s = simple.SaveString();
+                interact.LoadDiagram(LineRootNode.Load(s));
+            }
+
+
             DrawText($"{interact.Selected}", 20, 0, 12, YELLOW);
             if (interact.IsPopupOpen) interact.DrawPopup();
 
@@ -216,7 +222,7 @@ internal static class Program
         // De-Initialization
         //--------------------------------------------------------------------------------------
         CloseWindow(); // Close window and OpenGL context
-                       //--------------------------------------------------------------------------------------
+        //--------------------------------------------------------------------------------------
 
         return 0;
     }
