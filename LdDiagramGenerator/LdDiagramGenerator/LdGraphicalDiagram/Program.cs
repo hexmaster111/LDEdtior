@@ -108,8 +108,11 @@ internal static class Program
         bool showGridLines = false;
 
         InteractiveLdBuilder interact = new();
-        //interact.LoadDiagram(easy);
-        interact.LoadDiagram(simple);
+        interact.LoadDocument(new LdDocument([
+            simple,
+            easy
+        ]));
+
 
         SetTargetFPS(60);
         SetExitKey(0);
@@ -195,6 +198,11 @@ internal static class Program
                 DrawLdSpriteOnGrid(e.Key.Y, e.Key.X, e.Value.Label, e.Value.Kind);
             }
 
+            foreach (var ln in interact.LineNumbers)
+            {
+                DrawTextOnGrid(ln.GirdPos.Y, ln.GirdPos.X, ln.LineNo.ToString("0000"));
+            }
+
             SetMouseOffset(0, 0);
             EndMode2D();
             showGridLines = RayGui.GuiCheckBox(new Rectangle(0, 0, 32, 24), "Show Grid Lines", showGridLines);
@@ -207,7 +215,7 @@ internal static class Program
             if (RayGui.GuiButton(new Rectangle(0, 25 + 25, 32, 24), "Load"))
             {
                 var s = simple.SaveString();
-                interact.LoadDiagram(LineRootNode.Load(s));
+                //interact.LoadDiagram(LineRootNode.Load(s), new Point(1, 1));
             }
 
 

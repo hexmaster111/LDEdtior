@@ -2,6 +2,11 @@ using Newtonsoft.Json;
 
 namespace LdLib;
 
+public class LdDocument(LineRootNode[] lines)
+{
+    public LineRootNode[] Lines = lines;
+}
+
 public class LineRootNode(Node[] attached)
 {
     public Node[] Attached = attached;

@@ -14,8 +14,15 @@ public class InteractiveLdBuilder
 
     public readonly Dictionary<Point, LdElem> LdElems = new();
     public readonly List<WireT> Wires = new();
+    public readonly List<LineNumber> LineNumbers = new();
 
     private PopupKind _openPopup = PopupKind.Nothing;
+
+    public struct LineNumber
+    {
+        public Point GirdPos;
+        public int LineNo;
+    }
 
     public struct LdElem
     {
@@ -224,14 +231,32 @@ public class InteractiveLdBuilder
         });
     }
 
-
-    public void LoadDiagram(LineRootNode r)
+    public void LoadDocument(LdDocument ldDocument)
     {
-        const int maxLen = 9;
         LdElems.Clear();
         Wires.Clear();
         _placed.Clear();
-        var start = Selected = new Point(1, 1);
+        LineNumbers.Clear();
+
+        int cols = 0;
+        int lineNo = 1;
+        foreach (var line in ldDocument.Lines)
+        {
+            LoadDiagram(line, new Point(1, cols));
+            LineNumbers.Add(new LineNumber()
+            {
+                LineNo = lineNo++,
+                GirdPos = new Point(-1, cols)
+            });
+            
+            cols += line.Attached.Length * 2;
+        }
+    }
+
+    private void LoadDiagram(LineRootNode r, Point start)
+    {
+        const int maxLen = 9;
+        Selected = start;
         Ld(r.Attached);
 
         //Outputs
