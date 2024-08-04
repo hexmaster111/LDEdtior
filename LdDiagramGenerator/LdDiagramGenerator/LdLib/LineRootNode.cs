@@ -5,6 +5,12 @@ namespace LdLib;
 public class LdDocument(LineRootNode[] lines)
 {
     public LineRootNode[] Lines = lines;
+
+    public string[] GetAllDistinctNodeLabels(){
+        var allNodes = Lines.SelectMany(x=>x.GetAllNodes());
+        var allDistinctLabels = allNodes.Select(x=>x.Label).Distinct();
+        return allDistinctLabels.ToArray();
+    }
 }
 
 // ---------------- save load --------------------------
@@ -135,7 +141,7 @@ public class LineRootNode(Node[] attached)
         }
     }
 
-    private List<Node> GetAllNodes()
+    public List<Node> GetAllNodes()
     {
         List<Node> ret = new();
         VisitAllNodes(n => ret.Add(n), Attached);

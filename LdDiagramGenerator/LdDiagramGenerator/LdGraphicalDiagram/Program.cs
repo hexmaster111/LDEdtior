@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Numerics;
+using LdExecuter;
 using LdLib;
 using Newtonsoft.Json;
 using Raylib_CsLo;
@@ -8,6 +9,35 @@ using static Raylib_CsLo.RlGl;
 using Rectangle = Raylib_CsLo.Rectangle;
 
 namespace LdGraphicalDiagram;
+
+public class LdSimulator
+{
+
+    public LdExec ldExe = new();
+
+    public void Draw(Point pos)
+    {
+        DrawText("Output Table", pos.X, pos.Y, 24, WHITE);
+        int y = pos.Y + 25;
+        int yStart = y;
+
+        foreach (var item in ldExe.IOState)
+        {
+            DrawText($"{item.Key}", pos.X, y, 15, WHITE);
+            y += 17;
+        }
+
+        y = yStart;
+        foreach (var item in ldExe.IOState)
+        {
+            DrawText($"{item.Value}", pos.X+100, y, 15, WHITE);
+            y += 17;
+        }
+
+    }
+}
+
+
 
 internal static class Program
 {
@@ -89,16 +119,25 @@ internal static class Program
             }
         ]);
 
+
+        LineRootNode blinker = new([
+            new Node(){
+                Label ="BK0"
+            }
+        ]);
+
         Node Out1 = new()
         {
             Kind = Node.NodeKind.Coil,
-            Label = "O1", Attached = []
+            Label = "O1",
+            Attached = []
         };
 
         Node Out2 = new()
         {
             Kind = Node.NodeKind.Coil,
-            Label = "O2", Attached = []
+            Label = "O2",
+            Attached = []
         };
         Node L0X2NO = new()
         {
@@ -169,11 +208,15 @@ internal static class Program
         bool showGridLines = false;
 
         InteractiveLdBuilder interact = new();
-        interact.LoadDocument(new LdDocument([
+        LdSimulator simulator = new();
+        var document = new LdDocument([
             Line0Root,
             simple,
             easy
-        ]));
+        ]);
+
+        interact.LoadDocument(document);
+        simulator.ldExe.Load(document);
 
 
         SetTargetFPS(60);
@@ -220,6 +263,8 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_NINE)) interact.PlaceItem(Sprite.OrBranchStart, "");
             if (IsKeyPressed(KeyboardKey.KEY_ZERO)) interact.PlaceItem(Sprite.BranchEnd, "");
 
+            if(IsKeyPressed(KeyboardKey.KEY_S)) simulator.ldExe.DoCycle();
+
 
             //----------------------------------------------------------------------------------
 
@@ -265,21 +310,11 @@ internal static class Program
                 DrawTextOnGrid(ln.GirdPos.Y, ln.GirdPos.X, ln.LineNo.ToString("0000"));
             }
 
+            simulator.Draw(new Point(700, 0));
+
             SetMouseOffset(0, 0);
             EndMode2D();
             showGridLines = RayGui.GuiCheckBox(new Rectangle(0, 0, 32, 24), "Show Grid Lines", showGridLines);
-
-            if (RayGui.GuiButton(new Rectangle(0, 25, 32, 24), "Save"))
-            {
-                var s = simple.SaveString();
-            }
-
-            if (RayGui.GuiButton(new Rectangle(0, 25 + 25, 32, 24), "Load"))
-            {
-                var s = simple.SaveString();
-                //interact.LoadDiagram(LineRootNode.Load(s), new Point(1, 1));
-            }
-
 
             DrawText($"{interact.Selected}", 20, 0, 12, YELLOW);
             if (interact.IsPopupOpen) interact.DrawPopup();
