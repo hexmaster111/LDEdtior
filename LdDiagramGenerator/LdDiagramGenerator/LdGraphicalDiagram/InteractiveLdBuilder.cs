@@ -178,6 +178,8 @@ public class InteractiveLdBuilder
     {
         public const int Thickness = 3;
         public Vector2[] Points;
+        public Node SourceNode;
+
     }
 
 
@@ -208,7 +210,11 @@ public class InteractiveLdBuilder
         //We are in the same line, so its just A---B
         if (currentElem.Key.Y == nextElem.Key.Y)
         {
-            Wires.Add(new WireT { Points = [ToVect(currentElem.Key), ToVect(nextElem.Key)] });
+            Wires.Add(new WireT
+            {
+                Points = [ToVect(currentElem.Key), ToVect(nextElem.Key)],
+                SourceNode = currentNode
+            });
             return;
         }
 
@@ -226,7 +232,8 @@ public class InteractiveLdBuilder
                 new(nextElem.Key.X - .5f, currentElem.Key.Y),
                 new(nextElem.Key.X - .5f, nextElem.Key.Y),
                 ToVect(nextElem.Key)
-            ]
+            ],
+            SourceNode = currentNode
         });
     }
 
@@ -249,7 +256,7 @@ public class InteractiveLdBuilder
             });
 
             int c = LdElems.Max(x => x.Key.Y);
-            cols = c+2;
+            cols = c + 2;
         }
     }
 

@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Numerics;
+using System.Reflection;
 using LdExecuter;
 using LdLib;
 using Newtonsoft.Json;
@@ -51,6 +52,42 @@ public class LdSimulator
     }
 }
 
+
+public class TankSimulator
+{
+    public readonly Dictionary<string, bool> IO = new(){
+        {"HL", false},
+        {"LL", false},
+        {"FILL", false}
+    };
+
+    public float Level = 0;
+
+    public void Update()
+    {
+
+        if (Level > 0) Level -= 0.01f;
+
+        if (IO["FILL"])
+        {
+            Level += .03f;
+            if (Level >= 1f) Level = 1f;
+        }
+
+        IO["HL"] = Level >= .99f;
+        IO["LL"] = Level <= .01f;
+
+
+
+    }
+
+    internal void Draw(Point point)
+    {
+        DrawText("TANK", point.X, point.Y, 20, WHITE);
+        DrawRectangle(point.X, point.Y - (int)(Level * 100), 64, (int)(Level * 100), BLUE);
+    }
+}
+
 internal static class Program
 {
     internal const int GridWidthPx = 64, GridHeightPx = 64, SpritePaddingPx = 1, LabelFontSize = 32;
@@ -60,6 +97,11 @@ internal static class Program
     {
         #region Demo Data
         LineRootNode blinker = new([
+
+            new Node(){
+                Label="CR001",
+                Kind = Node.NodeKind.No,
+                Attached=[
             new Node()
             {
                 Label = "BK0",
@@ -74,6 +116,8 @@ internal static class Program
                     }
                 ]
             },
+                ]
+            }
         ]);
 
         Node coilCr0 = new()
@@ -137,6 +181,44 @@ internal static class Program
             }
         ]);
 
+        var hlCoil = new Node(){
+            Label ="HL",
+            Kind = Node.NodeKind.Nc,
+            Attached=[
+                new Node(){
+                    Label="FILL",
+                    Kind=Node.NodeKind.Coil,
+                    Attached=[]
+                },
+
+                new Node(){
+                    Label="CR0FL",
+                    Kind=Node.NodeKind.Coil,
+                    Attached=[]
+                }
+            ]
+        };
+
+        LineRootNode tankFill = new([
+            new Node(){
+                Label = "CR001",
+                Kind=Node.NodeKind.No,
+                Attached =[
+                    new Node(){
+                        Label="LL",
+                        Kind = Node.NodeKind.No,
+                        Attached=[hlCoil]
+                    },
+
+                    new Node(){
+                        Label="CR0FL",
+                        Kind = Node.NodeKind.No,
+                        Attached=[hlCoil]
+                    }
+                ]
+            }
+        ]);
+
         #endregion
 
         SetConfigFlags(ConfigFlags.FLAG_WINDOW_RESIZABLE);
@@ -160,7 +242,9 @@ internal static class Program
 
         InteractiveLdBuilder interact = new();
         LdSimulator simulator = new();
+        TankSimulator tank = new();
         var document = new LdDocument([
+            tankFill,
             startStop,
             startStop1,
             blinker,
@@ -169,6 +253,7 @@ internal static class Program
         interact.LoadDocument(document);
         simulator.ldExe.Load(document);
 
+        simulator.ldExe.IOState["FILL"] = false;
 
         SetTargetFPS(60);
         SetExitKey(0);
@@ -223,14 +308,21 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_ZERO)) interact.PlaceItem(Sprite.BranchEnd, "");
 
             if (IsKeyPressed(KeyboardKey.KEY_S)) ;
+
+            simulator.ldExe.IOState["LL"] = tank.IO["LL"];
+            simulator.ldExe.IOState["HL"] = tank.IO["HL"];
+
             simulator.ldExe.DoCycle();
+            tank.Update();
+
+            tank.IO["FILL"] = simulator.ldExe.IOState["FILL"];
 
 
-            //----------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------
 
-            // Draw
-            //----------------------------------------------------------------------------------
-            Draw:
+        // Draw
+        //----------------------------------------------------------------------------------
+        Draw:
             BeginDrawing();
             ClearBackground(BLACK);
             BeginMode2D(camera);
@@ -256,9 +348,20 @@ internal static class Program
             simulator.Draw(new Point(GridWidthPx * (InteractiveLdBuilder.MaxElementsLen + 2), 0));
             DrawPointerOnGrid(interact.Selected);
 
-            foreach (var wire in interact.Wires)
+            if (false)
             {
-                DrawLdWireOnGrid(wire);
+
+                foreach (var wire in interact.Wires)
+                {
+                    DrawLdWireOnGrid(wire);
+                }
+            }
+            else
+            {
+                foreach (var wire in interact.Wires)
+                {
+                    DrawLdDebuggingWireOnGrid(wire, simulator);
+                }
             }
 
 
@@ -272,8 +375,10 @@ internal static class Program
                 DrawTextOnGrid(ln.GirdPos.Y, ln.GirdPos.X, ln.LineNo.ToString("0000"));
             }
 
+            tank.Draw(new Point(900, 300));
 
-            DrawTextOnGrid(3, 11, JsonConvert.SerializeObject(document.GetSaveDocument(), Formatting.Indented));
+
+            //DrawTextOnGrid(3, 11, JsonConvert.SerializeObject(document.GetSaveDocument(), Formatting.Indented));
 
             SetMouseOffset(0, 0);
             EndMode2D();
@@ -295,17 +400,31 @@ internal static class Program
         return 0;
     }
 
+    private static void DrawLdDebuggingWireOnGrid(InteractiveLdBuilder.WireT wire, LdSimulator simulator)
+    {
+        for (int i = 0; i < wire.Points.Length - 1; i++)
+        {
+            var currentPt = wire.Points[i];
+            var nextPt = wire.Points[i + 1];
+            var color = simulator.ldExe.IOState[wire.SourceNode.Label] ? RED : YELLOW;
+
+            DrawWire(currentPt, nextPt, color);
+        }
+    }
+
+
+
     private static void DrawLdWireOnGrid(InteractiveLdBuilder.WireT wire)
     {
         for (int i = 0; i < wire.Points.Length - 1; i++)
         {
             var currentPt = wire.Points[i];
             var nextPt = wire.Points[i + 1];
-            DrawWire(currentPt, nextPt);
+            DrawWire(currentPt, nextPt, YELLOW);
         }
     }
 
-    private static void DrawWire(Vector2 gridPoint1, Vector2 gridPoint2)
+    private static void DrawWire(Vector2 gridPoint1, Vector2 gridPoint2, Raylib_CsLo.Color color)
     {
         const int wireThickness = InteractiveLdBuilder.WireT.Thickness;
         Vector2 screenPos1 = new() { X = gridPoint1.X * GridWidthPx, Y = gridPoint1.Y * GridHeightPx };
@@ -314,7 +433,7 @@ internal static class Program
         screenPos1.Y += .5f * GridHeightPx;
         screenPos2.Y += .5f * GridHeightPx;
 
-        DrawLineEx(screenPos1, screenPos2, wireThickness, YELLOW);
+        DrawLineEx(screenPos1, screenPos2, wireThickness, color);
     }
 
     private static void DrawLdSpriteOnGrid(int row, int col, string lbl, Sprite spriteidx)
