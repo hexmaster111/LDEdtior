@@ -89,6 +89,67 @@ internal static class Program
             }
         ]);
 
+        Node Out1 = new()
+        {
+            Kind = Node.NodeKind.Coil,
+            Label = "O1", Attached = []
+        };
+
+        Node Out2 = new()
+        {
+            Kind = Node.NodeKind.Coil,
+            Label = "O2", Attached = []
+        };
+        Node L0X2NO = new()
+        {
+            Attached =
+            [
+                new Node()
+                {
+                    Attached =
+                    [
+                        new Node()
+                        {
+                            Attached = [Out1, Out2],
+                            Kind = Node.NodeKind.Nc,
+                            Label = "M001"
+                        }
+                    ],
+                    Kind = Node.NodeKind.No,
+                    Label = "X4"
+                },
+                new Node()
+                {
+                    Attached = [Out1, Out2],
+                    Kind = Node.NodeKind.No,
+                    Label = "X6"
+                }
+            ],
+            Label = "X2",
+            Kind = Node.NodeKind.No
+        };
+
+        LineRootNode Line0Root = new([
+            new()
+            {
+                Attached = [L0X2NO],
+                Kind = Node.NodeKind.No,
+                Label = "X1"
+            },
+            new()
+            {
+                Attached = [L0X2NO],
+                Kind = Node.NodeKind.No,
+                Label = "X3"
+            },
+            new()
+            {
+                Attached = [L0X2NO],
+                Kind = Node.NodeKind.No,
+                Label = "X5"
+            }
+        ]);
+
         SetConfigFlags(ConfigFlags.FLAG_WINDOW_RESIZABLE);
 
         // RL Initialization
@@ -109,6 +170,7 @@ internal static class Program
 
         InteractiveLdBuilder interact = new();
         interact.LoadDocument(new LdDocument([
+            Line0Root,
             simple,
             easy
         ]));
@@ -136,7 +198,7 @@ internal static class Program
             float wheel = GetMouseWheelMove();
             if (wheel != 0)
             {
-                camera.offset.Y += wheel;
+                camera.offset.Y += wheel * 20f;
             }
 
             if (IsKeyPressed(KeyboardKey.KEY_LEFT)) interact.SelectLeft();
