@@ -30,6 +30,7 @@ public class LdExec
         {
             Node.NodeKind.No => IOState[n.Label],
             Node.NodeKind.Nc => !IOState[n.Label],
+            Node.NodeKind.Coil => true,
             _ => throw new ArgumentOutOfRangeException()
         };
 

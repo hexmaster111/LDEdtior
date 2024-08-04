@@ -12,12 +12,11 @@ namespace LdGraphicalDiagram;
 
 public class LdSimulator
 {
-
     public LdExec ldExe = new();
 
-    public void Draw(Point pos)
+    private void DrawOutputTable(Point pos)
     {
-        DrawText("Output Table", pos.X, pos.Y, 24, WHITE);
+        DrawText("IO Table", pos.X, pos.Y, 24, WHITE);
         int y = pos.Y + 25;
         int yStart = y;
 
@@ -30,14 +29,27 @@ public class LdSimulator
         y = yStart;
         foreach (var item in ldExe.IOState)
         {
-            DrawText($"{item.Value}", pos.X+100, y, 15, WHITE);
+            DrawText($"{item.Value}", pos.X + 100, y, 15, WHITE);
             y += 17;
         }
 
+        y = yStart;
+        foreach (var item in ldExe.IOState)
+        {
+            if (RayGui.GuiButton(new Rectangle(pos.X + 150, y, 50, 15), "T"))
+            {
+                ldExe.IOState[item.Key] = !ldExe.IOState[item.Key];
+            }
+
+            y += 17;
+        }
+    }
+
+    public void Draw(Point pos)
+    {
+        DrawOutputTable(pos);
     }
 }
-
-
 
 internal static class Program
 {
@@ -46,148 +58,86 @@ internal static class Program
 
     public static int Main(string[] args)
     {
-        Node l1Out = new Node()
-        {
-            Kind = Node.NodeKind.Coil,
-            Attached = [],
-            Label = "O0"
-        };
-
-        Node l1X003 = new Node()
-        {
-            Label = "X003",
-            Kind = Node.NodeKind.Nc,
-            Attached =
-            [
-                new()
-                {
-                    Attached = [l1Out],
-                    Kind = Node.NodeKind.Nc,
-                    Label = "X005"
-                },
-                new()
-                {
-                    Attached = [l1Out],
-                    Kind = Node.NodeKind.No,
-                    Label = "X006"
-                }
-            ]
-        };
-        LineRootNode simple = new([
-            new Node
-            {
-                Attached = [l1X003],
-                Kind = Node.NodeKind.No,
-                Label = "X001"
-            },
+        #region Demo Data
+        LineRootNode blinker = new([
             new Node()
             {
-                Attached = [l1X003],
-                Kind = Node.NodeKind.No,
-                Label = "X002"
+                Label = "BK0",
+                Kind = Node.NodeKind.Nc,
+                Attached =
+                [
+                    new Node()
+                    {
+                        Label = "BK0",
+                        Kind = Node.NodeKind.Coil,
+                        Attached = []
+                    }
+                ]
             },
-            new Node()
-            {
-                Kind = Node.NodeKind.No,
-                Label = "X004",
-                Attached = [l1Out]
-            }
         ]);
 
-        LineRootNode easy = new([
+        Node coilCr0 = new()
+        {
+            Label = "CR001",
+            Kind = Node.NodeKind.Coil,
+            Attached = []
+        };
+
+        LineRootNode startStop = new([
             new Node()
             {
-                Label = "1st",
+                Label = "STOP",
                 Kind = Node.NodeKind.No,
                 Attached =
                 [
                     new Node()
                     {
-                        Label = "2nd",
+                        Label = "START",
                         Kind = Node.NodeKind.No,
-                        Attached =
-                        [
-                            new Node()
-                            {
-                                Label = "3rd",
-                                Kind = Node.NodeKind.Coil,
-                                Attached = []
-                            }
-                        ]
+                        Attached = [coilCr0]
+                    },
+                    new Node()
+                    {
+                        Label = "CR001",
+                        Kind = Node.NodeKind.No,
+                        Attached = [coilCr0]
                     }
                 ]
             }
         ]);
 
 
-        LineRootNode blinker = new([
-            new Node(){
-                Label ="BK0"
-            }
-        ]);
-
-        Node Out1 = new()
+        Node coilCr01 = new()
         {
+            Label = "CR002",
             Kind = Node.NodeKind.Coil,
-            Label = "O1",
             Attached = []
         };
 
-        Node Out2 = new()
-        {
-            Kind = Node.NodeKind.Coil,
-            Label = "O2",
-            Attached = []
-        };
-        Node L0X2NO = new()
-        {
-            Attached =
-            [
-                new Node()
-                {
-                    Attached =
-                    [
-                        new Node()
-                        {
-                            Attached = [Out1, Out2],
-                            Kind = Node.NodeKind.Nc,
-                            Label = "M001"
-                        }
-                    ],
-                    Kind = Node.NodeKind.No,
-                    Label = "X4"
-                },
-                new Node()
-                {
-                    Attached = [Out1, Out2],
-                    Kind = Node.NodeKind.No,
-                    Label = "X6"
-                }
-            ],
-            Label = "X2",
-            Kind = Node.NodeKind.No
-        };
-
-        LineRootNode Line0Root = new([
-            new()
+        LineRootNode startStop1 = new([
+            new Node()
             {
-                Attached = [L0X2NO],
+                Label = "HALT",
                 Kind = Node.NodeKind.No,
-                Label = "X1"
-            },
-            new()
-            {
-                Attached = [L0X2NO],
-                Kind = Node.NodeKind.No,
-                Label = "X3"
-            },
-            new()
-            {
-                Attached = [L0X2NO],
-                Kind = Node.NodeKind.No,
-                Label = "X5"
+                Attached =
+                [
+                    new Node()
+                    {
+                        Label = "ENAB",
+                        Kind = Node.NodeKind.No,
+                        Attached = [coilCr01]
+                    },
+                    new Node()
+                    {
+                        Label = "CR002",
+                        Kind = Node.NodeKind.No,
+                        Attached = [coilCr01]
+                    }
+                ]
             }
         ]);
+
+        #endregion
 
         SetConfigFlags(ConfigFlags.FLAG_WINDOW_RESIZABLE);
 
@@ -201,6 +151,7 @@ internal static class Program
 
         Camera2D camera = new();
         camera.zoom = 1.0f;
+        camera.target = new(-65, -50);
 
         _sprites = LoadTexture("Assets/sc.png");
         if (_sprites.id == 0) throw new Exception("Could not load assets!");
@@ -210,9 +161,9 @@ internal static class Program
         InteractiveLdBuilder interact = new();
         LdSimulator simulator = new();
         var document = new LdDocument([
-            Line0Root,
-            simple,
-            easy
+            startStop,
+            startStop1,
+            blinker,
         ]);
 
         interact.LoadDocument(document);
@@ -235,6 +186,7 @@ internal static class Program
                 Vector2 delta = GetMouseDelta();
                 delta = RayMath.Vector2Scale(delta, -1.0f / camera.zoom);
                 camera.target = RayMath.Vector2Add(camera.target, delta);
+                CheckInBounds();
             }
 
             // scrolling
@@ -242,7 +194,14 @@ internal static class Program
             if (wheel != 0)
             {
                 camera.offset.Y += wheel * 20f;
+                CheckInBounds();
             }
+
+            void CheckInBounds()
+            {
+                if (camera.offset.Y >= 35) camera.offset.Y = 34;
+            }
+
 
             if (IsKeyPressed(KeyboardKey.KEY_LEFT)) interact.SelectLeft();
             if (IsKeyPressed(KeyboardKey.KEY_RIGHT)) interact.SelectRight();
@@ -263,7 +222,8 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_NINE)) interact.PlaceItem(Sprite.OrBranchStart, "");
             if (IsKeyPressed(KeyboardKey.KEY_ZERO)) interact.PlaceItem(Sprite.BranchEnd, "");
 
-            if(IsKeyPressed(KeyboardKey.KEY_S)) simulator.ldExe.DoCycle();
+            if (IsKeyPressed(KeyboardKey.KEY_S)) ;
+            simulator.ldExe.DoCycle();
 
 
             //----------------------------------------------------------------------------------
@@ -287,11 +247,13 @@ internal static class Program
             }
 
 
-            SetMouseOffset((int)camera.target.X, (int)camera.target.Y);
+            SetMouseOffset((int)((int)camera.target.X - camera.offset.X),
+                (int)((int)camera.target.Y - camera.offset.Y));
             var mp = GetMousePosition();
-            //DrawCircle((int)mp.X, (int)mp.Y, 5, RED);
+            DrawCircle((int)mp.X, (int)mp.Y, 5, RED);
             //GuiDrawIcon((int)GuiIconName.ICON_CURSOR_HAND, (int)mp.X, (int)mp.Y, 1, WHITE);
 
+            simulator.Draw(new Point(GridWidthPx * (InteractiveLdBuilder.MaxElementsLen + 2), 0));
             DrawPointerOnGrid(interact.Selected);
 
             foreach (var wire in interact.Wires)
@@ -310,7 +272,8 @@ internal static class Program
                 DrawTextOnGrid(ln.GirdPos.Y, ln.GirdPos.X, ln.LineNo.ToString("0000"));
             }
 
-            simulator.Draw(new Point(700, 0));
+
+            DrawTextOnGrid(3, 11, JsonConvert.SerializeObject(document.GetSaveDocument(), Formatting.Indented));
 
             SetMouseOffset(0, 0);
             EndMode2D();

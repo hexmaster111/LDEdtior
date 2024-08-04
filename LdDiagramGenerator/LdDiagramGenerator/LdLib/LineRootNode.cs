@@ -6,16 +6,31 @@ public class LdDocument(LineRootNode[] lines)
 {
     public LineRootNode[] Lines = lines;
 
-    public string[] GetAllDistinctNodeLabels(){
-        var allNodes = Lines.SelectMany(x=>x.GetAllNodes());
-        var allDistinctLabels = allNodes.Select(x=>x.Label).Distinct();
+    public string[] GetAllDistinctNodeLabels()
+    {
+        var allNodes = Lines.SelectMany(x => x.GetAllNodes());
+        var allDistinctLabels = allNodes.Select(x => x.Label).Distinct();
         return allDistinctLabels.ToArray();
+    }
+
+    public SaveDocument GetSaveDocument()
+    {
+        return new SaveDocument()
+        {
+            SavedLines = Lines.Select(x => x.SaveObject()).ToArray()
+        };
     }
 }
 
 // ---------------- save load --------------------------
 
 #region Save Load Types
+
+[JsonObject(MemberSerialization.OptIn)]
+public class SaveDocument
+{
+    [JsonProperty] public LineRootNodeSaveObject[] SavedLines = [];
+}
 
 [JsonObject(MemberSerialization.OptIn)]
 public class SaveNode
@@ -87,7 +102,7 @@ public class LineRootNode(Node[] attached)
     }
 
 
-    public string SaveString()
+    public LineRootNodeSaveObject SaveObject()
     {
         int idAccm = 0;
         var allDistinctNodes = GetAllNodes().Select(x =>
@@ -111,8 +126,7 @@ public class LineRootNode(Node[] attached)
         }
 
 
-        var saveObj = new LineRootNodeSaveObject(nodes, rootIds.ToArray());
-        return JsonConvert.SerializeObject(saveObj, Formatting.Indented);
+        return new LineRootNodeSaveObject(nodes, rootIds.ToArray());
 
         int[] GetAttachedNodeIds(Node[] attached)
         {
@@ -131,6 +145,8 @@ public class LineRootNode(Node[] attached)
             return ret.ToArray();
         }
     }
+
+    public string SaveString() => JsonConvert.SerializeObject(SaveObject(), Formatting.Indented);
 
     private void VisitAllNodes(Action<Node> visitingFunc, Node[] nodes)
     {

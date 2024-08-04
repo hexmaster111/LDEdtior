@@ -135,7 +135,6 @@ public class InteractiveLdBuilder
         }, n.Label, n);
     }
 
-
     private List<Node> _placed = new();
 
     public void Ld(Node[] currRoot)
@@ -248,19 +247,22 @@ public class InteractiveLdBuilder
                 LineNo = lineNo++,
                 GirdPos = new Point(-1, cols)
             });
-            
-            cols += line.Attached.Length * 2;
+
+            int c = LdElems.Max(x => x.Key.Y);
+            cols = c+2;
         }
     }
 
+    public const int MaxElementsLen = 9;
+
     private void LoadDiagram(LineRootNode r, Point start)
     {
-        const int maxLen = 9;
         Selected = start;
         Ld(r.Attached);
 
+
         //Outputs
-        Selected = start with { X = maxLen };
+        Selected = start with { X = MaxElementsLen };
         foreach (var o in r.Outputs)
         {
             PlaceItem(Sprite.Coil, o.Label, o);
@@ -283,7 +285,7 @@ public class InteractiveLdBuilder
         }
 
         //output end line
-        Selected = start with { X = start.X + maxLen };
+        Selected = start with { X = start.X + MaxElementsLen };
         PlaceItem(Sprite.BranchEnd, "");
         SelectDown();
         PlaceItem(Sprite.DownWire, "");
