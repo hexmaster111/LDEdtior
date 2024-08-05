@@ -1,92 +1,15 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using System.Reflection;
-using LdExecuter;
 using LdLib;
 using Newtonsoft.Json;
 using Raylib_CsLo;
+using static Raylib_CsLo.RayGui;
 using static Raylib_CsLo.Raylib;
 using static Raylib_CsLo.RlGl;
 using Rectangle = Raylib_CsLo.Rectangle;
 
 namespace LdGraphicalDiagram;
-
-public class LdSimulator
-{
-    public LdExec ldExe = new();
-
-    private void DrawOutputTable(Point pos)
-    {
-        DrawText("IO Table", pos.X, pos.Y, 24, WHITE);
-        int y = pos.Y + 25;
-        int yStart = y;
-
-        foreach (var item in ldExe.IOState)
-        {
-            DrawText($"{item.Key}", pos.X, y, 15, WHITE);
-            y += 17;
-        }
-
-        y = yStart;
-        foreach (var item in ldExe.IOState)
-        {
-            DrawText($"{item.Value}", pos.X + 100, y, 15, WHITE);
-            y += 17;
-        }
-
-        y = yStart;
-        foreach (var item in ldExe.IOState)
-        {
-            if (RayGui.GuiButton(new Rectangle(pos.X + 150, y, 50, 15), "T"))
-            {
-                ldExe.IOState[item.Key] = !ldExe.IOState[item.Key];
-            }
-
-            y += 17;
-        }
-    }
-
-    public void Draw(Point pos)
-    {
-        DrawOutputTable(pos);
-    }
-}
-
-
-public class TankSimulator
-{
-    public readonly Dictionary<string, bool> IO = new(){
-        {"HL", false},
-        {"LL", false},
-        {"FILL", false}
-    };
-
-    public float Level = 0;
-
-    public void Update()
-    {
-
-        if (Level > 0) Level -= 0.01f;
-
-        if (IO["FILL"])
-        {
-            Level += .03f;
-            if (Level >= 1f) Level = 1f;
-        }
-
-        IO["HL"] = Level >= .99f;
-        IO["LL"] = Level <= .01f;
-
-
-
-    }
-
-    internal void Draw(Point point)
-    {
-        DrawText("TANK", point.X, point.Y, 20, WHITE);
-        DrawRectangle(point.X, point.Y - (int)(Level * 100), 64, (int)(Level * 100), BLUE);
-    }
-}
 
 internal static class Program
 {
@@ -96,26 +19,28 @@ internal static class Program
     public static int Main(string[] args)
     {
         #region Demo Data
-        LineRootNode blinker = new([
 
-            new Node(){
-                Label="CR001",
-                Kind = Node.NodeKind.No,
-                Attached=[
+        LineRootNode blinker = new([
             new Node()
             {
-                Label = "BK0",
-                Kind = Node.NodeKind.Nc,
+                Label = "CR001",
+                Kind = Node.NodeKind.No,
                 Attached =
                 [
                     new Node()
                     {
                         Label = "BK0",
-                        Kind = Node.NodeKind.Coil,
-                        Attached = []
-                    }
-                ]
-            },
+                        Kind = Node.NodeKind.Nc,
+                        Attached =
+                        [
+                            new Node()
+                            {
+                                Label = "BK0",
+                                Kind = Node.NodeKind.Coil,
+                                Attached = []
+                            }
+                        ]
+                    },
                 ]
             }
         ]);
@@ -181,39 +106,47 @@ internal static class Program
             }
         ]);
 
-        var hlCoil = new Node(){
-            Label ="HL",
+        var hlCoil = new Node()
+        {
+            Label = "HL",
             Kind = Node.NodeKind.Nc,
-            Attached=[
-                new Node(){
-                    Label="FILL",
-                    Kind=Node.NodeKind.Coil,
-                    Attached=[]
+            Attached =
+            [
+                new Node()
+                {
+                    Label = "FILL",
+                    Kind = Node.NodeKind.Coil,
+                    Attached = []
                 },
 
-                new Node(){
-                    Label="CR0FL",
-                    Kind=Node.NodeKind.Coil,
-                    Attached=[]
+                new Node()
+                {
+                    Label = "CR0FL",
+                    Kind = Node.NodeKind.Coil,
+                    Attached = []
                 }
             ]
         };
 
         LineRootNode tankFill = new([
-            new Node(){
+            new Node()
+            {
                 Label = "CR001",
-                Kind=Node.NodeKind.No,
-                Attached =[
-                    new Node(){
-                        Label="LL",
+                Kind = Node.NodeKind.No,
+                Attached =
+                [
+                    new Node()
+                    {
+                        Label = "LL",
                         Kind = Node.NodeKind.No,
-                        Attached=[hlCoil]
+                        Attached = [hlCoil]
                     },
 
-                    new Node(){
-                        Label="CR0FL",
+                    new Node()
+                    {
+                        Label = "CR0FL",
                         Kind = Node.NodeKind.No,
-                        Attached=[hlCoil]
+                        Attached = [hlCoil]
                     }
                 ]
             }
@@ -245,15 +178,12 @@ internal static class Program
         TankSimulator tank = new();
         var document = new LdDocument([
             tankFill,
-            startStop,
-            startStop1,
-            blinker,
         ]);
 
         interact.LoadDocument(document);
-        simulator.ldExe.Load(document);
+        simulator.LdExe.Load(document);
 
-        simulator.ldExe.IOState["FILL"] = false;
+        simulator.LdExe.IOState["FILL"] = false;
 
         SetTargetFPS(60);
         SetExitKey(0);
@@ -309,20 +239,20 @@ internal static class Program
 
             if (IsKeyPressed(KeyboardKey.KEY_S)) ;
 
-            simulator.ldExe.IOState["LL"] = tank.IO["LL"];
-            simulator.ldExe.IOState["HL"] = tank.IO["HL"];
+            simulator.LdExe.IOState["LL"] = tank.IO["LL"];
+            simulator.LdExe.IOState["HL"] = tank.IO["HL"];
 
-            simulator.ldExe.DoCycle();
+            simulator.LdExe.DoCycle();
             tank.Update();
 
-            tank.IO["FILL"] = simulator.ldExe.IOState["FILL"];
+            tank.IO["FILL"] = simulator.LdExe.IOState["FILL"];
 
 
-        //----------------------------------------------------------------------------------
+            //----------------------------------------------------------------------------------
 
-        // Draw
-        //----------------------------------------------------------------------------------
-        Draw:
+            // Draw
+            //----------------------------------------------------------------------------------
+            Draw:
             BeginDrawing();
             ClearBackground(BLACK);
             BeginMode2D(camera);
@@ -346,11 +276,11 @@ internal static class Program
             //GuiDrawIcon((int)GuiIconName.ICON_CURSOR_HAND, (int)mp.X, (int)mp.Y, 1, WHITE);
 
             simulator.Draw(new Point(GridWidthPx * (InteractiveLdBuilder.MaxElementsLen + 2), 0));
+            tank.Draw(new Point(GridWidthPx * (InteractiveLdBuilder.MaxElementsLen + 3), 300));
             DrawPointerOnGrid(interact.Selected);
 
             if (false)
             {
-
                 foreach (var wire in interact.Wires)
                 {
                     DrawLdWireOnGrid(wire);
@@ -375,14 +305,13 @@ internal static class Program
                 DrawTextOnGrid(ln.GirdPos.Y, ln.GirdPos.X, ln.LineNo.ToString("0000"));
             }
 
-            tank.Draw(new Point(900, 300));
 
 
             //DrawTextOnGrid(3, 11, JsonConvert.SerializeObject(document.GetSaveDocument(), Formatting.Indented));
 
             SetMouseOffset(0, 0);
             EndMode2D();
-            showGridLines = RayGui.GuiCheckBox(new Rectangle(0, 0, 32, 24), "Show Grid Lines", showGridLines);
+            showGridLines = GuiCheckBox(new Rectangle(0, 0, 32, 24), "Show Grid Lines", showGridLines);
 
             DrawText($"{interact.Selected}", 20, 0, 12, YELLOW);
             if (interact.IsPopupOpen) interact.DrawPopup();
@@ -406,12 +335,11 @@ internal static class Program
         {
             var currentPt = wire.Points[i];
             var nextPt = wire.Points[i + 1];
-            var color = simulator.ldExe.IOState[wire.SourceNode.Label] ? RED : YELLOW;
+            var color = simulator.LdExe.IOState[wire.SourceNode.Label] ? RED : YELLOW;
 
             DrawWire(currentPt, nextPt, color);
         }
     }
-
 
 
     private static void DrawLdWireOnGrid(InteractiveLdBuilder.WireT wire)

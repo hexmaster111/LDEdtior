@@ -179,7 +179,6 @@ public class InteractiveLdBuilder
         public const int Thickness = 3;
         public Vector2[] Points;
         public Node SourceNode;
-
     }
 
 
@@ -255,6 +254,7 @@ public class InteractiveLdBuilder
                 GirdPos = new Point(-1, cols)
             });
 
+
             int c = LdElems.Max(x => x.Key.Y);
             cols = c + 2;
         }
@@ -287,18 +287,23 @@ public class InteractiveLdBuilder
         {
             PlaceItem(Sprite.BranchStart, "");
             SelectDown();
-            PlaceItem(Sprite.DownWire, "");
             SelectDown();
         }
 
+
         //output end line
         Selected = start with { X = start.X + MaxElementsLen };
-        PlaceItem(Sprite.BranchEnd, "");
-        SelectDown();
-        PlaceItem(Sprite.DownWire, "");
-        SelectDown();
 
-
+        for (int i = 0; i < r.Outputs.Length; i++)
+        {
+            PlaceItem(Sprite.BranchEnd, "");
+            SelectDown();
+            SelectDown();
+            
+        }
+        
+        
+        
         return;
     }
 }
