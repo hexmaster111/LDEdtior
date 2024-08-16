@@ -155,11 +155,12 @@ internal static class Program
         #endregion
 
         SetConfigFlags(ConfigFlags.FLAG_WINDOW_RESIZABLE);
+        SetConfigFlags(ConfigFlags.FLAG_WINDOW_MAXIMIZED);
 
         // RL Initialization
         //--------------------------------------------------------------------------------------
-        const int screenWidth = 800;
-        const int screenHeight = 450;
+        const int screenWidth = 1024;
+        const int screenHeight = 800;
 
         InitWindow(screenWidth, screenHeight, "LD");
 
@@ -306,7 +307,6 @@ internal static class Program
             }
 
 
-
             //DrawTextOnGrid(3, 11, JsonConvert.SerializeObject(document.GetSaveDocument(), Formatting.Indented));
 
             SetMouseOffset(0, 0);
@@ -335,7 +335,32 @@ internal static class Program
         {
             var currentPt = wire.Points[i];
             var nextPt = wire.Points[i + 1];
-            var color = simulator.LdExe.IOState[wire.SourceNode.Label] ? RED : YELLOW;
+            var kind = wire.SourceNode.Kind;
+            var state = simulator.LdExe.IOState[wire.SourceNode.Label];
+            // var color =  state ? RED : YELLOW;
+
+            var onColor = RED;
+            var offColor = YELLOW;
+            
+            var color = kind switch
+            {
+                Node.NodeKind.No => state switch
+                {
+                    true => onColor,
+                    false => offColor
+                },
+                Node.NodeKind.Nc => state switch
+                {
+                    true => offColor,
+                    false => onColor
+                },
+                Node.NodeKind.Coil => state switch
+                {
+                    true => onColor,
+                    false => offColor
+                },
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
             DrawWire(currentPt, nextPt, color);
         }

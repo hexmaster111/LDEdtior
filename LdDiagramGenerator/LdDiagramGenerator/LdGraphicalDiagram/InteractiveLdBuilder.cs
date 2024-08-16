@@ -89,15 +89,11 @@ public class InteractiveLdBuilder
         };
     }
 
-    public void SelectLeft()
-    {
-        Selected = Selected with { X = Selected.X - 1 };
-    }
-
+    public void SelectLeft() => Selected = Selected with { X = Selected.X - 1 };
     public void SelectRight() => Selected = Selected with { X = Selected.X + 1 };
     public void SelectUp() => Selected = Selected with { Y = Selected.Y - 1 };
     public void SelectDown() => Selected = Selected with { Y = Selected.Y + 1 };
-
+    
     private enum PopupKind
     {
         Nothing,
