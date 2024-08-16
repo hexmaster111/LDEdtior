@@ -218,16 +218,20 @@ internal static class Program
                 if (camera.offset.Y >= 35) camera.offset.Y = 34;
             }
 
+            if (IsKeyPressed(KeyboardKey.KEY_A)) interact.SelectNodeLeft();
+            if (IsKeyPressed(KeyboardKey.KEY_D)) interact.SelectNodeRight();
+            if (IsKeyPressed(KeyboardKey.KEY_W)) interact.SelectNodeUp();
+            if (IsKeyPressed(KeyboardKey.KEY_S)) interact.SelectNodeDown();
+
+            if (IsKeyPressed(KeyboardKey.KEY_F1)) interact.InsertNewNode(Node.NodeKind.No, "LBL");
+            if (IsKeyPressed(KeyboardKey.KEY_F2)) interact.InsertNewNode(Node.NodeKind.Nc, "LBL");
+            if (IsKeyPressed(KeyboardKey.KEY_F3)) interact.InsertNewNode(Node.NodeKind.Coil, "LBL");
 
             if (IsKeyPressed(KeyboardKey.KEY_LEFT)) interact.SelectLeft();
             if (IsKeyPressed(KeyboardKey.KEY_RIGHT)) interact.SelectRight();
             if (IsKeyPressed(KeyboardKey.KEY_UP)) interact.SelectUp();
             if (IsKeyPressed(KeyboardKey.KEY_DOWN)) interact.SelectDown();
 
-            if (IsKeyPressed(KeyboardKey.KEY_A)) interact.SelectNodeLeft();
-            if (IsKeyPressed(KeyboardKey.KEY_D)) interact.SelectNodeRight();
-            if (IsKeyPressed(KeyboardKey.KEY_W)) interact.SelectNodeUp();
-            if (IsKeyPressed(KeyboardKey.KEY_S)) interact.SelectNodeDown();
 
             if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.DeleteItem();
             if (IsKeyPressed(KeyboardKey.KEY_P)) interact.EditItemProperties();
@@ -243,15 +247,16 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_NINE)) interact.PlaceItem(Sprite.OrBranchStart, "");
             if (IsKeyPressed(KeyboardKey.KEY_ZERO)) interact.PlaceItem(Sprite.BranchEnd, "");
 
-            if (IsKeyPressed(KeyboardKey.KEY_S)) ;
+            if (IsKeyPressed(KeyboardKey.KEY_S))
+            {
+                simulator.LdExe.IOState["LL"] = tank.IO["LL"];
+                simulator.LdExe.IOState["HL"] = tank.IO["HL"];
 
-            simulator.LdExe.IOState["LL"] = tank.IO["LL"];
-            simulator.LdExe.IOState["HL"] = tank.IO["HL"];
+                simulator.LdExe.DoCycle();
+                tank.Update();
 
-            simulator.LdExe.DoCycle();
-            tank.Update();
-
-            tank.IO["FILL"] = simulator.LdExe.IOState["FILL"];
+                tank.IO["FILL"] = simulator.LdExe.IOState["FILL"];
+            }
 
 
             //----------------------------------------------------------------------------------
@@ -285,7 +290,7 @@ internal static class Program
             tank.Draw(new Point(GridWidthPx * (InteractiveLdBuilder.MaxElementsLen + 3), 300));
             DrawPointerOnGrid(interact.Selected);
             DrawPointerOnGrid(interact.SelectedNode);
-            if (false)
+            if (true)
             {
                 foreach (var wire in interact.Wires)
                 {

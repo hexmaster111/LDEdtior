@@ -6,6 +6,8 @@ public class LdDocument(LineRootNode[] lines)
 {
     public LineRootNode[] Lines = lines;
 
+    public IEnumerable<Node> GetAllDistinctNodes() => Lines.SelectMany(x => x.GetAllNodes()).Distinct();
+
     public string[] GetAllDistinctNodeLabels()
     {
         var allNodes = Lines.SelectMany(x => x.GetAllNodes());

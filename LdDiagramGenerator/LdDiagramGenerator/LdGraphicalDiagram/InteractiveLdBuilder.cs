@@ -80,19 +80,50 @@ public class InteractiveLdBuilder
             Node = node,
         };
 
+    private Node InsertCoil(Node.NodeKind kind, string label)
+    {
+        return null;
+    }
+
+    private Node InsertContact(Node.NodeKind kind, string label)
+    {
+        if (!LdElems.TryGetValue(SelectedNode, out var ldElem)) return null;
+        if (ldElem.Node == null) return null;
+        var cn = _currDoc.GetAllDistinctNodes().First(x => ReferenceEquals(x, ldElem.Node!));
+
+        var attached = cn.Attached;
+
+        var newNode = new Node()
+        {
+            Label = label,
+            Attached = attached,
+            Kind = kind
+        };
+
+        cn.Attached = [newNode];
+        return newNode;
+    }
+
     public void InsertNewNode(Node.NodeKind kind, string label)
     {
+        Node newNode = null;
         switch (kind)
         {
             case Node.NodeKind.No:
-                break;
             case Node.NodeKind.Nc:
+                newNode = InsertContact(kind, label);
                 break;
             case Node.NodeKind.Coil:
+                newNode = InsertCoil(kind, label);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
         }
+
+        if (newNode == null) return;
+
+        LoadDocument(_currDoc);
+        var nn = LdElems.FirstOrDefault(x => ReferenceEquals(x.Value.Node, newNode));
     }
 
     public void EditItemProperties()
@@ -110,12 +141,26 @@ public class InteractiveLdBuilder
 
     public void SelectNodeLeft()
     {
-        var currNode = LdElems.GetValueOrDefault(Selected, default);
+        var currNode = LdElems.GetValueOrDefault(SelectedNode, default);
         if (currNode.Node == null) return;
+        var connectToMe = _currDoc.GetAllDistinctNodes().Where(x => x.Attached
+            .Contains(currNode.Node));
+        var fcm = connectToMe.FirstOrDefault();
+        if (fcm == null) return;
+        var cn = LdElems
+            .FirstOrDefault(x => ReferenceEquals(x.Value.Node, fcm));
+        SelectedNode = cn.Key;
     }
 
     public void SelectNodeRight()
     {
+        var currNode = LdElems.GetValueOrDefault(SelectedNode, default);
+        if (currNode.Node == null) return;
+        var firstAttached = currNode.Node.Attached.FirstOrDefault();
+        if (firstAttached == null) return;
+        var cn = LdElems
+            .FirstOrDefault(x => ReferenceEquals(x.Value.Node, firstAttached));
+        SelectedNode = cn.Key;
     }
 
     public void SelectNodeUp()
