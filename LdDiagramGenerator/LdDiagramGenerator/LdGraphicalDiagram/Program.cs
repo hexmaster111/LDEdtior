@@ -224,6 +224,11 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_UP)) interact.SelectUp();
             if (IsKeyPressed(KeyboardKey.KEY_DOWN)) interact.SelectDown();
 
+            if (IsKeyPressed(KeyboardKey.KEY_A)) interact.SelectNodeLeft();
+            if (IsKeyPressed(KeyboardKey.KEY_D)) interact.SelectNodeRight();
+            if (IsKeyPressed(KeyboardKey.KEY_W)) interact.SelectNodeUp();
+            if (IsKeyPressed(KeyboardKey.KEY_S)) interact.SelectNodeDown();
+
             if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.DeleteItem();
             if (IsKeyPressed(KeyboardKey.KEY_P)) interact.EditItemProperties();
 
@@ -279,7 +284,7 @@ internal static class Program
             simulator.Draw(new Point(GridWidthPx * (InteractiveLdBuilder.MaxElementsLen + 2), 0));
             tank.Draw(new Point(GridWidthPx * (InteractiveLdBuilder.MaxElementsLen + 3), 300));
             DrawPointerOnGrid(interact.Selected);
-
+            DrawPointerOnGrid(interact.SelectedNode);
             if (false)
             {
                 foreach (var wire in interact.Wires)
@@ -331,17 +336,15 @@ internal static class Program
 
     private static void DrawLdDebuggingWireOnGrid(InteractiveLdBuilder.WireT wire, LdSimulator simulator)
     {
+        var onColor = RED;
+        var offColor = YELLOW;
+
         for (int i = 0; i < wire.Points.Length - 1; i++)
         {
             var currentPt = wire.Points[i];
             var nextPt = wire.Points[i + 1];
             var kind = wire.SourceNode.Kind;
             var state = simulator.LdExe.IOState[wire.SourceNode.Label];
-            // var color =  state ? RED : YELLOW;
-
-            var onColor = RED;
-            var offColor = YELLOW;
-            
             var color = kind switch
             {
                 Node.NodeKind.No => state switch

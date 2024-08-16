@@ -10,6 +10,7 @@ namespace LdGraphicalDiagram;
 public class InteractiveLdBuilder
 {
     public Point Selected { get; private set; }
+    public Point SelectedNode { get; private set; }
     public bool IsPopupOpen => _openPopup != PopupKind.Nothing;
 
     public readonly Dictionary<Point, LdElem> LdElems = new();
@@ -17,6 +18,8 @@ public class InteractiveLdBuilder
     public readonly List<LineNumber> LineNumbers = new();
 
     private PopupKind _openPopup = PopupKind.Nothing;
+    private LdDocument _currDoc;
+
 
     public struct LineNumber
     {
@@ -69,15 +72,28 @@ public class InteractiveLdBuilder
         }
     }
 
-    public void PlaceItem(Sprite element, string label, Node? node = null) => LdElems[Selected] = new LdElem()
+    public void PlaceItem(Sprite element, string label, Node? node = null) =>
+        LdElems[Selected] = new LdElem()
+        {
+            Kind = element,
+            Label = label,
+            Node = node,
+        };
+
+    public void InsertNewNode(Node.NodeKind kind, string label)
     {
-        Kind = element,
-        Label = label,
-        Node = node,
-    };
-
-
-    public void DeleteItem() => LdElems.Remove(Selected);
+        switch (kind)
+        {
+            case Node.NodeKind.No:
+                break;
+            case Node.NodeKind.Nc:
+                break;
+            case Node.NodeKind.Coil:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
+        }
+    }
 
     public void EditItemProperties()
     {
@@ -89,11 +105,32 @@ public class InteractiveLdBuilder
         };
     }
 
+
+    public void DeleteItem() => LdElems.Remove(Selected);
+
+    public void SelectNodeLeft()
+    {
+        var currNode = LdElems.GetValueOrDefault(Selected, default);
+        if (currNode.Node == null) return;
+    }
+
+    public void SelectNodeRight()
+    {
+    }
+
+    public void SelectNodeUp()
+    {
+    }
+
+    public void SelectNodeDown()
+    {
+    }
+
     public void SelectLeft() => Selected = Selected with { X = Selected.X - 1 };
     public void SelectRight() => Selected = Selected with { X = Selected.X + 1 };
     public void SelectUp() => Selected = Selected with { Y = Selected.Y - 1 };
     public void SelectDown() => Selected = Selected with { Y = Selected.Y + 1 };
-    
+
     private enum PopupKind
     {
         Nothing,
@@ -238,6 +275,9 @@ public class InteractiveLdBuilder
         Wires.Clear();
         _placed.Clear();
         LineNumbers.Clear();
+        SelectedNode = new Point(1, 0);
+
+        _currDoc = ldDocument;
 
         int cols = 0;
         int lineNo = 1;
@@ -295,11 +335,9 @@ public class InteractiveLdBuilder
             PlaceItem(Sprite.BranchEnd, "");
             SelectDown();
             SelectDown();
-            
         }
-        
-        
-        
+
+
         return;
     }
 }

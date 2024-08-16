@@ -8,8 +8,11 @@ public class Tests
     public void Setup()
     {
     }
-    
-    
+
+    [Test]
+    public void TestThatLoadingLinesUpAllThePointersRight()
+    {
+    }
 
     [Test]
     public void SaveAndLoadIntoSaveSaveObjectString()
@@ -64,10 +67,10 @@ public class Tests
 
 
         string s = simple.SaveString();
-        
+
         LineRootNode loaded = LineRootNode.Load(s);
         string other = loaded.SaveString();
-        
+
         Assert.That(other.SequenceEqual(s));
         Assert.Pass();
     }
