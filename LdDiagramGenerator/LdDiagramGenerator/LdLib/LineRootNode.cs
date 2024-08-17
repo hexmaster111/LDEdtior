@@ -2,9 +2,11 @@ using Newtonsoft.Json;
 
 namespace LdLib;
 
+
+
 public class LdDocument(LineRootNode[] lines)
 {
-    public LineRootNode[] Lines = lines;
+    public List<LineRootNode> Lines = lines.ToList();
 
     public IEnumerable<Node> GetAllDistinctNodes() => Lines.SelectMany(x => x.GetAllNodes()).Distinct();
 

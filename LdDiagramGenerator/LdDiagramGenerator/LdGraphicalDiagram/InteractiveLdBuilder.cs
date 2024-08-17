@@ -12,6 +12,7 @@ public class InteractiveLdBuilder
     private Point Selected { get; set; }
     public Point SelectedNode { get; private set; }
     public bool IsPopupOpen => _openPopup != PopupKind.Nothing;
+    public Action<LdDocument>? DocumentLoadedCallback { get; set; }
 
     public readonly Dictionary<Point, LdElem> LdElems = new();
     public readonly List<WireT> Wires = new();
@@ -82,6 +83,40 @@ public class InteractiveLdBuilder
 
     private Node InsertCoil(Node.NodeKind kind, string label)
     {
+        var n = LdElems.GetValueOrDefault(SelectedNode, default);
+        if (n.Node == null) return null;
+
+        while (n.Node.Attached.Length != 0)
+        {
+            SelectNodeRight();
+            n = LdElems.GetValueOrDefault(SelectedNode, default);
+            if (n.Node == null) return null;
+        }
+
+
+        var newNode = new Node() { Label = label, Kind = kind, Attached = [] };
+
+        if (n.Node.Kind.IsOutput())
+        {
+            //we already have coiles in this line, find nodes that connect to this coil, and tie the new 
+            //coil into that list
+            var attached = GetNodesThatConnectToMe(n.Node);
+            foreach (var an in attached)
+            {
+                //an.attached.add newNode
+                an.Attached = an.Attached.Concat([newNode]).ToArray();
+            }
+
+            return newNode;
+        }
+        else
+        {
+            //We are somewhere in the doc still not on the outputs
+            n.Node.Attached = [newNode];
+            return newNode;
+        }
+
+
         return null;
     }
 
@@ -138,6 +173,14 @@ public class InteractiveLdBuilder
         };
     }
 
+    public void InsertNewLine()
+    {
+        var newNode = new Node() { Kind = Node.NodeKind.No, Attached = [], Label = "LBL" };
+        _currDoc.Lines.Add(new LineRootNode([newNode]));
+        LoadDocument(_currDoc);
+        SelectedNode = FindLdElemFromNode(newNode).Key;
+    }
+
 
     private KeyValuePair<Point, LdElem> FindLdElemFromNode(Node n) => LdElems
         .FirstOrDefault(x => ReferenceEquals(x.Value.Node, n));
@@ -158,16 +201,19 @@ public class InteractiveLdBuilder
             .Where(x => x.Attached
                 .Contains(currNode.Node)).ToArray();
 
-        var attachedTo = toRemove.Attached;
-
-        foreach (var conNode in connectToMe)
+        if (connectToMe.Length != 0)
         {
-            conNode.Attached = attachedTo;
-        }
-        //TODO: this dosnt work with branches
+            var attachedTo = toRemove.Attached;
 
-        LoadDocument(_currDoc);
-        SelectedNode = GetElemFromNode(connectToMe[0]).Key;
+            foreach (var conNode in connectToMe)
+            {
+                conNode.Attached = attachedTo;
+            }
+            //TODO: this dosnt work with branches
+
+            LoadDocument(_currDoc);
+            SelectedNode = GetElemFromNode(connectToMe[0]).Key;
+        }
     }
 
     public void SelectNodeLeft()
@@ -252,11 +298,52 @@ public class InteractiveLdBuilder
             var firstAttached = attachTo[0].Attached;
             int ourIdx = MyIdx(firstAttached, currNode.Node);
             if (ourIdx == -1) throw new Exception("HOW~!");
-            
+
             if (ourIdx - 1 < 0 || ourIdx - 1 >= firstAttached.Length) return;
             var selNode = firstAttached[ourIdx - 1];
             SelectedNode = FindLdElemFromNode(selNode).Key;
         }
+    }
+
+    private int MyLineIdx(Node me)
+    {
+        for (var index = 0; index < _currDoc.Lines.Count; index++)
+        {
+            var line = _currDoc.Lines[index];
+            foreach (var dn in line.GetAllNodes().Distinct())
+            {
+                if (ReferenceEquals(me, dn))
+                {
+                    return index;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    public void SelectLineDown()
+    {
+        var n = LdElems.GetValueOrDefault(SelectedNode);
+        if (n.Node == null) return;
+
+        var curr = MyLineIdx(n.Node);
+        if (curr == -1) return;
+
+        if (curr + 1 >= 0 && curr + 1 < _currDoc.Lines.Count)
+            SelectedNode = GetElemFromNode(_currDoc.Lines[curr + 1].Attached.First()).Key;
+    }
+
+    public void SelectLineUp()
+    {
+        var n = LdElems.GetValueOrDefault(SelectedNode);
+        if (n.Node == null) return;
+
+        var curr = MyLineIdx(n.Node);
+        if (curr == -1) return;
+
+        if (curr - 1 >= 0 && curr - 1 < _currDoc.Lines.Count)
+            SelectedNode = GetElemFromNode(_currDoc.Lines[curr - 1].Attached.First()).Key;
     }
 
     private void SelectLeft() => Selected = Selected with { X = Selected.X - 1 };
@@ -423,6 +510,8 @@ public class InteractiveLdBuilder
             int c = LdElems.Max(x => x.Key.Y);
             cols = c + 2;
         }
+
+        DocumentLoadedCallback?.Invoke(ldDocument);
     }
 
     public const int MaxElementsLen = 9;
@@ -470,3 +559,4 @@ public class InteractiveLdBuilder
         return;
     }
 }
+

@@ -181,8 +181,11 @@ internal static class Program
             tankFill,
         ]);
 
+        interact.DocumentLoadedCallback = (d) => { simulator.LdExe.Load(d); };
+
+
         interact.LoadDocument(document);
-        simulator.LdExe.Load(document);
+
 
         simulator.LdExe.IOState["FILL"] = false;
 
@@ -223,14 +226,19 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_W)) interact.SelectNodeUp();
             if (IsKeyPressed(KeyboardKey.KEY_S)) interact.SelectNodeDown();
 
+            if (IsKeyPressed(KeyboardKey.KEY_DOWN)) interact.SelectLineDown();
+            if (IsKeyPressed(KeyboardKey.KEY_UP)) interact.SelectLineUp();
+
             if (IsKeyPressed(KeyboardKey.KEY_F1)) interact.InsertNewNode(Node.NodeKind.No, "LBL");
             if (IsKeyPressed(KeyboardKey.KEY_F2)) interact.InsertNewNode(Node.NodeKind.Nc, "LBL");
             if (IsKeyPressed(KeyboardKey.KEY_F3)) interact.InsertNewNode(Node.NodeKind.Coil, "LBL");
-            
+
+            if (IsKeyPressed(KeyboardKey.KEY_N)) interact.InsertNewLine();
+
             if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.BackspaceNode();
             if (IsKeyPressed(KeyboardKey.KEY_P)) interact.EditItemProperties();
 
-       
+
             if (IsKeyPressed(KeyboardKey.KEY_M))
             {
                 simulator.LdExe.IOState["LL"] = tank.IO["LL"];

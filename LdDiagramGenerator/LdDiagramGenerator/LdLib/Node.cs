@@ -29,7 +29,8 @@ public static class Ext
         _ => throw new ArgumentOutOfRangeException(nameof(k), k, null)
     };
     
-    
+
+
     public static string LdSymble(this Node.NodeKind kind) => kind switch
     {
         Node.NodeKind.No => "---| |---",
