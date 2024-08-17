@@ -216,6 +216,7 @@ public class InteractiveLdBuilder
             //SAME AS THE MAX LEN CHECK
             return;
         }
+
         if (attachTo[0].Attached.Length > 1)
         {
             var firstAttached = attachTo[0].Attached;
@@ -236,6 +237,25 @@ public class InteractiveLdBuilder
 
     public void SelectNodeUp()
     {
+        var currNode = LdElems.GetValueOrDefault(SelectedNode, default);
+        if (currNode.Node == null) return;
+
+        var attachTo = GetNodesThatConnectToMe(currNode.Node);
+        if (attachTo.Length == 0)
+        {
+            return;
+        }
+
+        if (attachTo[0].Attached.Length > 1)
+        {
+            var firstAttached = attachTo[0].Attached;
+            int ourIdx = MyIdx(firstAttached, currNode.Node);
+            if (ourIdx == -1) throw new Exception("HOW~!");
+            
+            if (ourIdx - 1 < 0 || ourIdx - 1 >= firstAttached.Length) return;
+            var selNode = firstAttached[ourIdx - 1];
+            SelectedNode = FindLdElemFromNode(selNode).Key;
+        }
     }
 
     private void SelectLeft() => Selected = Selected with { X = Selected.X - 1 };
