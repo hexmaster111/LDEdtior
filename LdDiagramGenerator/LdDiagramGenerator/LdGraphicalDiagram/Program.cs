@@ -226,28 +226,12 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_F1)) interact.InsertNewNode(Node.NodeKind.No, "LBL");
             if (IsKeyPressed(KeyboardKey.KEY_F2)) interact.InsertNewNode(Node.NodeKind.Nc, "LBL");
             if (IsKeyPressed(KeyboardKey.KEY_F3)) interact.InsertNewNode(Node.NodeKind.Coil, "LBL");
-
-            if (IsKeyPressed(KeyboardKey.KEY_LEFT)) interact.SelectLeft();
-            if (IsKeyPressed(KeyboardKey.KEY_RIGHT)) interact.SelectRight();
-            if (IsKeyPressed(KeyboardKey.KEY_UP)) interact.SelectUp();
-            if (IsKeyPressed(KeyboardKey.KEY_DOWN)) interact.SelectDown();
-
-
-            if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.DeleteItem();
+            
+            if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.DeleteNode();
             if (IsKeyPressed(KeyboardKey.KEY_P)) interact.EditItemProperties();
 
-            if (IsKeyPressed(KeyboardKey.KEY_ONE)) interact.PlaceItem(Sprite.Wire, "");
-            if (IsKeyPressed(KeyboardKey.KEY_TWO)) interact.PlaceItem(Sprite.No, "LBL");
-            if (IsKeyPressed(KeyboardKey.KEY_THREE)) interact.PlaceItem(Sprite.Nc, "LBL");
-            if (IsKeyPressed(KeyboardKey.KEY_FOUR)) interact.PlaceItem(Sprite.Coil, "LBL");
-            if (IsKeyPressed(KeyboardKey.KEY_FIVE)) interact.PlaceItem(Sprite.OrBranch, "");
-            if (IsKeyPressed(KeyboardKey.KEY_SIX)) interact.PlaceItem(Sprite.BranchStart, "");
-            if (IsKeyPressed(KeyboardKey.KEY_SEVEN)) interact.PlaceItem(Sprite.DownWire, "");
-            if (IsKeyPressed(KeyboardKey.KEY_EIGHT)) interact.PlaceItem(Sprite.OrBranchEnd, "");
-            if (IsKeyPressed(KeyboardKey.KEY_NINE)) interact.PlaceItem(Sprite.OrBranchStart, "");
-            if (IsKeyPressed(KeyboardKey.KEY_ZERO)) interact.PlaceItem(Sprite.BranchEnd, "");
-
-            if (IsKeyPressed(KeyboardKey.KEY_S))
+       
+            if (IsKeyPressed(KeyboardKey.KEY_M))
             {
                 simulator.LdExe.IOState["LL"] = tank.IO["LL"];
                 simulator.LdExe.IOState["HL"] = tank.IO["HL"];
@@ -288,7 +272,7 @@ internal static class Program
 
             simulator.Draw(new Point(GridWidthPx * (InteractiveLdBuilder.MaxElementsLen + 2), 0));
             tank.Draw(new Point(GridWidthPx * (InteractiveLdBuilder.MaxElementsLen + 3), 300));
-            DrawPointerOnGrid(interact.Selected);
+            //DrawPointerOnGrid(interact.Selected);
             DrawPointerOnGrid(interact.SelectedNode);
             if (true)
             {
@@ -323,7 +307,7 @@ internal static class Program
             EndMode2D();
             showGridLines = GuiCheckBox(new Rectangle(0, 0, 32, 24), "Show Grid Lines", showGridLines);
 
-            DrawText($"{interact.Selected}", 20, 0, 12, YELLOW);
+            DrawText($"{interact.SelectedNode}", 20, 0, 12, YELLOW);
             if (interact.IsPopupOpen) interact.DrawPopup();
 
             EndDrawing();

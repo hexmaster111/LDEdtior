@@ -9,7 +9,7 @@ namespace LdGraphicalDiagram;
 
 public class InteractiveLdBuilder
 {
-    public Point Selected { get; private set; }
+    private Point Selected { get; set; }
     public Point SelectedNode { get; private set; }
     public bool IsPopupOpen => _openPopup != PopupKind.Nothing;
 
@@ -124,6 +124,8 @@ public class InteractiveLdBuilder
 
         LoadDocument(_currDoc);
         var nn = LdElems.FirstOrDefault(x => ReferenceEquals(x.Value.Node, newNode));
+        if (nn.Value.Node == null) return;
+        SelectedNode = nn.Key;
     }
 
     public void EditItemProperties()
@@ -137,18 +139,45 @@ public class InteractiveLdBuilder
     }
 
 
-    public void DeleteItem() => LdElems.Remove(Selected);
+    private KeyValuePair<Point, LdElem> FindLdElemFromNode(Node n) => LdElems
+        .FirstOrDefault(x => ReferenceEquals(x.Value.Node, n));
+
+    private Node[] GetNodesThatConnectToMe(Node me) => _currDoc
+        .GetAllDistinctNodes()
+        .Where(x => x.Attached
+            .Contains(me)).ToArray();
+
+    public void DeleteNode()
+    {
+        var currNode = LdElems.GetValueOrDefault(SelectedNode, default);
+        if (currNode.Node == null) return;
+        var toRemove = currNode.Node!;
+
+        var connectToMe = _currDoc
+            .GetAllDistinctNodes()
+            .Where(x => x.Attached
+                .Contains(currNode.Node)).ToArray();
+
+        var attachedTo = toRemove.Attached;
+
+        foreach (var conNode in connectToMe)
+        {
+            conNode.Attached = attachedTo;
+        }
+        //TODO: this dosnt work with branches
+
+        LoadDocument(_currDoc);
+    }
 
     public void SelectNodeLeft()
     {
         var currNode = LdElems.GetValueOrDefault(SelectedNode, default);
         if (currNode.Node == null) return;
-        var connectToMe = _currDoc.GetAllDistinctNodes().Where(x => x.Attached
-            .Contains(currNode.Node));
+        var connectToMe = GetNodesThatConnectToMe(currNode.Node);
+
         var fcm = connectToMe.FirstOrDefault();
         if (fcm == null) return;
-        var cn = LdElems
-            .FirstOrDefault(x => ReferenceEquals(x.Value.Node, fcm));
+        var cn = FindLdElemFromNode(fcm);
         SelectedNode = cn.Key;
     }
 
@@ -158,23 +187,61 @@ public class InteractiveLdBuilder
         if (currNode.Node == null) return;
         var firstAttached = currNode.Node.Attached.FirstOrDefault();
         if (firstAttached == null) return;
-        var cn = LdElems
-            .FirstOrDefault(x => ReferenceEquals(x.Value.Node, firstAttached));
+        var cn = FindLdElemFromNode(firstAttached);
         SelectedNode = cn.Key;
+    }
+
+    private int MyIdx(Node[] list, Node me)
+    {
+        for (int i = 0; i < list.Length; i++)
+        {
+            if (ReferenceEquals(list[i], me))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public void SelectNodeDown()
+    {
+        var currNode = LdElems.GetValueOrDefault(SelectedNode, default);
+        if (currNode.Node == null) return;
+
+        var attachTo = GetNodesThatConnectToMe(currNode.Node);
+        if (attachTo.Length == 0)
+        {
+            //TODO: make some kinda ghost wire? or something, to show the user they are selecting an or branch to add
+            //SAME AS THE MAX LEN CHECK
+            return;
+        }
+        if (attachTo[0].Attached.Length > 1)
+        {
+            var firstAttached = attachTo[0].Attached;
+            int ourIdx = MyIdx(firstAttached, currNode.Node);
+            if (ourIdx == -1) throw new Exception("HOW~!");
+
+
+            if (ourIdx + 1 /*going down */ >= firstAttached.Length)
+            {
+                //TODO: make some kinda ghost wire? or something, to show the user they are selecting an or branch to add
+                return;
+            }
+
+            var selNode = firstAttached[ourIdx + 1];
+            SelectedNode = FindLdElemFromNode(selNode).Key;
+        }
     }
 
     public void SelectNodeUp()
     {
     }
 
-    public void SelectNodeDown()
-    {
-    }
-
-    public void SelectLeft() => Selected = Selected with { X = Selected.X - 1 };
-    public void SelectRight() => Selected = Selected with { X = Selected.X + 1 };
-    public void SelectUp() => Selected = Selected with { Y = Selected.Y - 1 };
-    public void SelectDown() => Selected = Selected with { Y = Selected.Y + 1 };
+    private void SelectLeft() => Selected = Selected with { X = Selected.X - 1 };
+    private void SelectRight() => Selected = Selected with { X = Selected.X + 1 };
+    private void SelectUp() => Selected = Selected with { Y = Selected.Y - 1 };
+    private void SelectDown() => Selected = Selected with { Y = Selected.Y + 1 };
 
     private enum PopupKind
     {
@@ -182,10 +249,6 @@ public class InteractiveLdBuilder
         NoContactProperties
     }
 
-    public void MoveTo(Point point)
-    {
-        Selected = point;
-    }
 
     /* X1              X2        X4      X7        X8               O1
      * ---| |---+-----| |---+---| |---+---| |---+---| |---+---------( )---
