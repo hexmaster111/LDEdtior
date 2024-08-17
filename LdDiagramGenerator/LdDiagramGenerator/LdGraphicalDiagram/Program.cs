@@ -227,7 +227,7 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_F2)) interact.InsertNewNode(Node.NodeKind.Nc, "LBL");
             if (IsKeyPressed(KeyboardKey.KEY_F3)) interact.InsertNewNode(Node.NodeKind.Coil, "LBL");
             
-            if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.DeleteNode();
+            if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.BackspaceNode();
             if (IsKeyPressed(KeyboardKey.KEY_P)) interact.EditItemProperties();
 
        

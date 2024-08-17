@@ -147,7 +147,7 @@ public class InteractiveLdBuilder
         .Where(x => x.Attached
             .Contains(me)).ToArray();
 
-    public void DeleteNode()
+    public void BackspaceNode()
     {
         var currNode = LdElems.GetValueOrDefault(SelectedNode, default);
         if (currNode.Node == null) return;
@@ -167,6 +167,7 @@ public class InteractiveLdBuilder
         //TODO: this dosnt work with branches
 
         LoadDocument(_currDoc);
+        SelectedNode = GetElemFromNode(connectToMe[0]).Key;
     }
 
     public void SelectNodeLeft()
