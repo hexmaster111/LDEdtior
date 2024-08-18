@@ -201,7 +201,19 @@ public class InteractiveLdBuilder
             .Where(x => x.Attached
                 .Contains(currNode.Node)).ToArray();
 
-        if (connectToMe.Length != 0)
+        if (toRemove.Attached.Length == 0)
+        {
+            foreach (var nodeConnectedToMe in connectToMe)
+            {
+                var l = nodeConnectedToMe.Attached.ToList();
+                l.Remove(toRemove);
+                nodeConnectedToMe.Attached = l.ToArray();
+            }
+            
+            LoadDocument(_currDoc);
+            SelectedNode = GetElemFromNode(connectToMe[0]).Key;
+        }
+        else if (connectToMe.Length != 0)
         {
             var attachedTo = toRemove.Attached;
 
@@ -209,7 +221,6 @@ public class InteractiveLdBuilder
             {
                 conNode.Attached = attachedTo;
             }
-            //TODO: this dosnt work with branches
 
             LoadDocument(_currDoc);
             SelectedNode = GetElemFromNode(connectToMe[0]).Key;
@@ -559,4 +570,3 @@ public class InteractiveLdBuilder
         return;
     }
 }
-
