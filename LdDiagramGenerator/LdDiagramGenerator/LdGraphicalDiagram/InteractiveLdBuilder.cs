@@ -139,6 +139,26 @@ public class InteractiveLdBuilder
         return newNode;
     }
 
+    public void InsertNewOrBranch(Node.NodeKind kind, string label)
+    {
+        if (kind.IsOutput()) throw new Exception("Wrong kind!");
+        if (!LdElems.TryGetValue(SelectedNode, out var ld)) return;
+        if (ld.Node == null) return;
+
+        var newNode = new Node() { Kind = kind, Label = label, Attached = [] };
+        newNode.Attached = ld.Node.Attached;
+
+        foreach (var nodeToAddNewNodeTo in GetNodesThatConnectToMe(ld.Node))
+        {
+            nodeToAddNewNodeTo.Attached = nodeToAddNewNodeTo.Attached.Concat([newNode]).ToArray();
+        }
+
+        LoadDocument(_currDoc);
+        var f = FindLdElemFromNode(newNode);
+        if (f.Value.Node == null) return;
+        SelectedNode = f.Key;
+    }
+
     public void InsertNewNode(Node.NodeKind kind, string label)
     {
         Node newNode = null;
@@ -201,7 +221,7 @@ public class InteractiveLdBuilder
             .Where(x => x.Attached
                 .Contains(currNode.Node)).ToArray();
 
-        if (toRemove.Attached.Length == 0)
+        if (toRemove.Attached.Length == 0 && connectToMe.Length != 0)
         {
             foreach (var nodeConnectedToMe in connectToMe)
             {
@@ -209,7 +229,7 @@ public class InteractiveLdBuilder
                 l.Remove(toRemove);
                 nodeConnectedToMe.Attached = l.ToArray();
             }
-            
+
             LoadDocument(_currDoc);
             SelectedNode = GetElemFromNode(connectToMe[0]).Key;
         }
@@ -224,6 +244,15 @@ public class InteractiveLdBuilder
 
             LoadDocument(_currDoc);
             SelectedNode = GetElemFromNode(connectToMe[0]).Key;
+        }
+        else
+        {
+            //remove line
+            var lineIdx = MyLineIdx(toRemove);
+            _currDoc.Lines.RemoveAt(lineIdx);
+
+            LoadDocument(_currDoc);
+            // SelectedNode = GetElemFromNode(connectToMe[0]).Key;??
         }
     }
 
@@ -270,8 +299,7 @@ public class InteractiveLdBuilder
         var attachTo = GetNodesThatConnectToMe(currNode.Node);
         if (attachTo.Length == 0)
         {
-            //TODO: make some kinda ghost wire? or something, to show the user they are selecting an or branch to add
-            //SAME AS THE MAX LEN CHECK
+            SelectLineDown();
             return;
         }
 
@@ -284,7 +312,7 @@ public class InteractiveLdBuilder
 
             if (ourIdx + 1 /*going down */ >= firstAttached.Length)
             {
-                //TODO: make some kinda ghost wire? or something, to show the user they are selecting an or branch to add
+                SelectLineDown();
                 return;
             }
 
@@ -301,6 +329,7 @@ public class InteractiveLdBuilder
         var attachTo = GetNodesThatConnectToMe(currNode.Node);
         if (attachTo.Length == 0)
         {
+            SelectLineUp();
             return;
         }
 
@@ -310,7 +339,11 @@ public class InteractiveLdBuilder
             int ourIdx = MyIdx(firstAttached, currNode.Node);
             if (ourIdx == -1) throw new Exception("HOW~!");
 
-            if (ourIdx - 1 < 0 || ourIdx - 1 >= firstAttached.Length) return;
+            if (ourIdx - 1 < 0 || ourIdx - 1 >= firstAttached.Length)
+            {
+                SelectLineUp();
+                return;
+            }
             var selNode = firstAttached[ourIdx - 1];
             SelectedNode = FindLdElemFromNode(selNode).Key;
         }

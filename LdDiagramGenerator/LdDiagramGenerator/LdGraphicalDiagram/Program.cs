@@ -233,6 +233,10 @@ internal static class Program
             if (IsKeyPressed(KeyboardKey.KEY_F2)) interact.InsertNewNode(Node.NodeKind.Nc, "LBL");
             if (IsKeyPressed(KeyboardKey.KEY_F3)) interact.InsertNewNode(Node.NodeKind.Coil, "LBL");
 
+            if (IsKeyPressed(KeyboardKey.KEY_F9)) interact.InsertNewOrBranch(Node.NodeKind.No, "LBL");
+            if (IsKeyPressed(KeyboardKey.KEY_F10)) interact.InsertNewOrBranch(Node.NodeKind.Nc, "LBL");
+
+            
             if (IsKeyPressed(KeyboardKey.KEY_N)) interact.InsertNewLine();
 
             if (IsKeyPressed(KeyboardKey.KEY_BACKSPACE)) interact.BackspaceNode();
