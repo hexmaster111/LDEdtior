@@ -15,21 +15,20 @@ public static class LdLineComp
         int orc = 0;
         foreach (var n in ns)
         {
-            l.Add(VmOpp.Read(pinLookup.ToPin(n.Label)));
+            if (n.Kind.IsOutput()) l.Add(VmOpp.Set(pinLookup.ToPin(n.Label)));
+            else l.Add(VmOpp.Read(pinLookup.ToPin(n.Label)));
             orc += 1;
         }
 
-        l.Add(VmOpp.Or(orc));
-
-        if (andC != 0 && orc != 0)
+        if (ns.Length > 1)
         {
-            
+            l.Add(VmOpp.Or(orc));
         }
-
+        else andC = andC + 1;
 
         foreach (var n in ns)
         {
-            CompileNodes(n.Attached, l, pinLookup);
+            CompileNodes(n.Attached, l, pinLookup, andC);
         }
     }
 

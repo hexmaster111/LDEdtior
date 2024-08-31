@@ -6,6 +6,7 @@ public struct VmOpp
     public static VmOpp Read(int pin) => new() { Arg = pin, Kind = VmOppKind.Read };
     public static VmOpp Or(int popCount) => new() { Arg = popCount, Kind = VmOppKind.Or };
     public static VmOpp And(int popCount) => new() { Arg = popCount, Kind = VmOppKind.And };
+    public static VmOpp Set(int pin) => new() { Arg = pin, Kind = VmOppKind.Set };
 }
 
 public enum VmOppKind
